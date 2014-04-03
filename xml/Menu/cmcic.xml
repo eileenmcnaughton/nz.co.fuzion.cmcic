@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<menu>
+  <item>
+     <path>civicrm/cmcic</path>
+     <page_callback>CRM_Cmcic_Page_Cmcic</page_callback>
+  </item>
+</menu>

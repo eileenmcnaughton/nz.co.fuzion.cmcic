@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<extension key="nz.co.fuzion.cmcic" type="module">
+  <file>cmcic</file>
+  <name>CMCIC Payment processor</name>
+  <description>Payment processor for CMCIC</description>
+  <license>AGPL</license>
+  <maintainer>
+    <author>Eileen</author>
+    <email>eileen@fuzion.co.nz</email>
+  </maintainer>
+  <releaseDate>2014-03-18</releaseDate>
+  <version>1.0</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>4.2</ver>
+    <ver>4.4</ver>
+  </compatibility>
+  <comments>CMCIC Payment processor</comments>
+  <civix>
+    <namespace>CRM/Cmcic</namespace>
+  </civix>
+</extension>
