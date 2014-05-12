@@ -5,6 +5,9 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
 
   protected $_mode = NULL;
 
+  protected $_key = '';
+
+  protected $_algorithm = 'md5';
   /**
    * We only need one instance of this object. So we use the singleton
    * pattern and cache the instance in this variable
@@ -24,6 +27,9 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
   function __construct($mode, &$paymentProcessor) {
 
     $this->_mode = $mode;
+    $this->_key = $paymentProcessor['password'];
+    $this->_algorithm = empty($paymentProcessor['subject']) ? 'md5' : $paymentProcessor['subject'];
+
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('CMCIC');
   }
@@ -85,78 +91,92 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    */
   function doTransferCheckout(&$params, $component) {
     $component = strtolower($component);
-
-    $url = CRM_Utils_System::url("civicrm/payment/ipn", "processor_id=1", TRUE, null, false);
     if ($component == 'event') {
-      $cancelURL = CRM_Utils_System::url('civicrm/event/register',
-        "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
-        TRUE, NULL, FALSE
-      );
+      $baseURL = 'civicrm/event/register';
+      $cancelURL = urlencode(CRM_Utils_System::url($baseURL, array(
+        'reset' => 1,
+        'cc' => 'fail',
+        'participantId' => $orderID[4],
+      ),
+      TRUE, NULL, FALSE
+      ));
     }
     elseif ($component == 'contribute') {
-      $cancelURL = CRM_Utils_System::url('civicrm/contribute/transact',
-        "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
+      $baseURL = 'civicrm/contribute/transact';
+      $cancelURL = urlencode(CRM_Utils_System::url($baseURL, array(
+        '_qf_Main_display' => 1,
+        'qfKey' => $params['qfKey'],
+        'cancel' => 1,
+        ),
         TRUE, NULL, FALSE
-      );
+      ));
     }
-    $returnURL = CRM_Utils_System::url($url,
-      "_qf_ThankYou_display=1&qfKey={$params['qfKey']}",
+
+    $returnOKURL = urlencode(CRM_Utils_System::url($baseURL,array(
+      '_qf_ThankYou_display' => 1,
+       'qfKey' => $params['qfKey']
+      ),
       TRUE, NULL, FALSE
-    );
-
-    /**
-    * Build the private data string to pass to DPS, which they will give back to us with the
-    *
-    * transaction result.  We are building this as a comma-separated list so as to avoid long URLs.
-    *
-    * Parameters passed: a=contactID, b=contributionID,c=contributionTypeID,d=invoiceID,e=membershipID,f=participantID,g=eventID
-    */
-
-    $privateData = "a={$params['contactID']},b={$params['contributionID']},c={$params['contributionTypeID']},d={$params['invoiceID']}";
+    ));
+    $returnUrl = urlencode(CRM_Utils_System::url($baseURL,array(
+      '_qf_Confirm_display' => 'true',
+       'qfKey' => $params['qfKey']
+      ),
+      TRUE, NULL, FALSE
+    ));
 
     if ($component == 'event') {
       $merchantRef = substr($params['contactID'] . "-" . substr($params['description'], 27, 20), 0, 24);
-      $privateData .= ",f={$params['participantID']},g={$params['eventID']}";
     }
     elseif ($component == 'contribute') {
-      $membershipID = CRM_Utils_Array::value('membershipID', $params);
-      if ($membershipID) {
-        $privateData .= ",e=$membershipID";
-      }
       $merchantRef = substr($params['contactID'] . "-" . $params['contributionID'] . " " . substr($params['description'], 20, 20), 0, 24);
-
     }
+    $emailFields  = array('email', 'email-Primary', 'email-5');
+    $email = '';
+    foreach ($emailFields as $emailField) {
+      if(!empty($params[$emailField])) {
+        $email = $params[$emailField];
+      }
+    }
+    $lang = $this->getLanguage();
 
     $paymentParams = array(
-      'url_retour' => $url,
+      'url_retour' => $returnURL,
       'submit_to' => $this->_paymentProcessor['url_site'],
-      'url_retour_ok' => $url,
+      'url_retour_ok' => $returnOKURL,
       'url_retour_err' => $cancelURL,
       'sealed_params' => array(
         'TPE' => $this->_paymentProcessor['user_name'],
         'date' => date("d/m/Y:H:i:s"),
         'montant' => str_replace(",", "", number_format($params['amount'], 2)) . $params['currencyID'],
         'reference' => $params['contributionID'], //$merchantRef,
-        'texte-libre' => 'def', //$privateData . $params['qfKey'] . $component . ",".$this->_paymentProcessor['id'],
+        'texte-libre' => htmlentities(base64_encode($merchantRef)), //$privateData . $params['qfKey'] . $component . ",".$this->_paymentProcessor['id'],
         'version' => '3.0',
         //@todo - get language code
-        'lgue' => 'EN',
+        'lgue' => $lang,
         'societe' => $this->_paymentProcessor['signature'],
-        'mail' => empty($params['email']) ? $params['email-Primary'] : $params['email'],
+        'mail' => $email,
       ),
     );
 
     // Allow further manipulation of params via custom hooks
     CRM_Utils_Hook::alterPaymentProcessorParams($this, $params, $paymentParams);
-    $algorithm = empty($this->_paymentProcessor['subject']) ? 'md5' : $this->_paymentProcessor['subject'];
-    $paymentParams['MAC'] = $this->encodeMac($this->getUsableKey($this->_paymentProcessor['password']), $paymentParams['sealed_params'], $algorithm);
+    $paymentParams['MAC'] = $this->encodeMac($paymentParams['sealed_params']);
     $paymentParams = array_merge($paymentParams, $paymentParams['sealed_params']);
     unset($paymentParams['sealed_params']);
-    CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cmcic', $paymentParams));
+    $query_string = '';
+    foreach ($paymentParams as $name => $value) {
+      $query_string .= $name . '=' . $value . '&';
+    }
 
-    /*
-     *  determine whether method is pxaccess or pxpay by whether signature (mac key) is defined
-    */
+    // Remove extra &
+    $query_string = rtrim($query_string, '&');
+
+    // Redirect the user to the payment url.
+    CRM_Utils_System::redirect($this->_paymentProcessor['url_site'] . '?' . $query_string);
+    // looks like we dodged the bullet on POST being required. may as well keep this & the page
+    // in case they tighten up later
+    // CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cmcic', $paymentParams));
   }
 
   /**
@@ -166,9 +186,9 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    * @param unknown $algorithm
    * @return string
    */
-  private function encodeMac($key, $params, $algorithm) {
+  private function encodeMac($params) {
     $string = implode('*', $params) . '**********';
-    return hash_hmac($algorithm, $string, $key);
+    return hash_hmac($this->getAlgorithm(), $string, $this->getKey());
   }
 
   /**
@@ -196,14 +216,60 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     return pack("H*", $hex_str_key);
   }
 
+
+  /**
+   * Get language string -Size: 2 characters
+   * Possible values: FR EN DE IT ES NL PT SV
+   * Since this is a French payment processor we will default to French if no
+   * other match established
+   * @return string
+   */
+  function getLanguage() {
+    $lang = explode('_', CRM_Core_Config::singleton()->lcMessages);
+    $validLangs = array('fr', 'en', 'de', 'it', 'es', 'nl', 'pt', 'sv');
+    if(in_array($lang[0], $validLangs)) {
+      return strtoupper($lang[0]);
+    }
+    return 'FR';
+  }
+
+  /**
+   * getter for key
+   * @return string
+   */
+  function getKey() {
+    return $this->getUsableKey($this->_key);
+  }
+
+
+  /**
+   * getter for algorithm
+   * @return string
+   */
+  function getAlgorithm() {
+    return $this->_algorithm;
+  }
+
   function handlePaymentNotification(){
-echo "<pre>";
-print_r($_REQUEST);
-die;
-    $payFlowLinkIPN = new CRM_Core_Payment_PayflowLinkIPN( );
-    $payFlowLinkIPN ->main( );
+    $logTableExists = FALSE;
+    $checkTable = "SHOW TABLES LIKE 'civicrm_notification_log'";
+    $dao = CRM_Core_DAO::executeQuery($checkTable);
+    if(!$dao->N) {
+      CRM_Core_DAO::executeQuery("CREATE TABLE IF NOT EXISTS `civicrm_notification_log` (
+      `id` INT(10) NOT NULL AUTO_INCREMENT,
+      `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `message_type` VARCHAR(255) NULL DEFAULT NULL,
+      `message_raw` LONGTEXT NULL,
+       PRIMARY KEY (`id`)
+      )");
+    }
+
+    $dao = CRM_Core_DAO::executeQuery("INSERT INTO civicrm_notification_log (message_raw, message_type) VALUES (%1, 'cmcic')",
+      array(1 => array(json_encode($_REQUEST), 'String'))
+    );
+    $ipn = new CRM_Core_Payment_CmcicIPN(array_merge($_REQUEST, array('exit_mode' => TRUE)));
+    $ipn->main();
     //if for any reason we come back here
     CRM_Core_Error::debug_log_message( "It should not be possible to reach this line" );
   }
-
 }
