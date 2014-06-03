@@ -19,7 +19,7 @@ return array (
       'signature_label' => 'Site code',
       'subject_label' => 'algorithm - defaults to md5',
       'class_name' => 'Payment_Cmcic',
-      'billing_mode' => 1,
+      'billing_mode' => 4,
       'url_site_default' => 'https://ssl.paiement.cic-banques.fr/test/paiement.cgi',
     ),
   ),
