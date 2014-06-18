@@ -187,7 +187,7 @@ class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
       // @todo required for base ipn but problematic as api layer handles this
       $transaction = new CRM_Core_Transaction();
       $ipn = new CRM_Core_Payment_BaseIPN();
-      $ipn->failed($input, $ids, $objects, $transaction);
+      $ipn->failed($objects, $transaction, $input);
     }
     catch (Exception $e) {
     }
