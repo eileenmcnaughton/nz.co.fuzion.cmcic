@@ -150,7 +150,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
         'date' => date("d/m/Y:H:i:s"),
         'montant' => str_replace(",", "", number_format($params['amount'], 2)) . $params['currencyID'],
         'reference' => $params['contributionID'], //$merchantRef,
-        'texte-libre' => htmlentities($merchantRef), //$privateData . $params['qfKey'] . $component . ",".$this->_paymentProcessor['id'],
+        'texte-libre' => url_encode($merchantRef), //$privateData . $params['qfKey'] . $component . ",".$this->_paymentProcessor['id'],
         'version' => '3.0',
         //@todo - get language code
         'lgue' => $lang,
