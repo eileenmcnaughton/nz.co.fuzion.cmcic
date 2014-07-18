@@ -126,10 +126,10 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     ));
 
     if ($component == 'event') {
-      $merchantRef = substr($params['contactID'] . "-" . substr($params['description'], 27, 20), 0, 24);
+      $merchantRef = $params['contactID'] . "-" . $params['description'];//, 27, 20), 0, 24);
     }
     elseif ($component == 'contribute') {
-      $merchantRef = substr($params['contactID'] . "-" . $params['contributionID'] . " " . substr($params['description'], 20, 20), 0, 24);
+      $merchantRef = $params['contactID'] . "-" . $params['contributionID'];// . " " . substr($params['description'], 20, 20), 0, 24);
     }
     $emailFields  = array('email', 'email-Primary', 'email-5');
     $email = '';
@@ -150,7 +150,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
         'date' => date("d/m/Y:H:i:s"),
         'montant' => str_replace(",", "", number_format($params['amount'], 2)) . $params['currencyID'],
         'reference' => $params['contributionID'], //$merchantRef,
-        'texte-libre' => urlencode($merchantRef), //$privateData . $params['qfKey'] . $component . ",".$this->_paymentProcessor['id'],
+        'texte-libre' => $this->urlEncodeField($merchantRef, 24), //$privateData . $params['qfKey'] . $component . ",".$this->_paymentProcessor['id'],
         'version' => '3.0',
         //@todo - get language code
         'lgue' => $lang,
@@ -177,6 +177,27 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     // looks like we dodged the bullet on POST being required. may as well keep this & the page
     // in case they tighten up later
     // CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cmcic', $paymentParams));
+  }
+
+  /**
+   * Cut field to correct length without truncating mid character
+   * @param string $value
+   * @param integer $fieldlength
+   * @return string
+   */
+  function urlEncodeField($value, $fieldlength) {
+    //@todo - we need to do more testing about the encoding - at this stage we have stopped
+    // passing description strings until we can sort
+    return htmlentities(substr($value, $length));
+
+    /**
+    $string = substr(rawurlencode($value), 0, $fieldlength);
+    $lastPercent = strrpos($string, '%');
+    if ($lastPercent > $fieldlength - 3) {
+      $string = substr($string, 0, $lastPercent);
+    }
+    return $string;
+    */
   }
 
   /**
