@@ -246,10 +246,11 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    * @return string
    */
   function getLanguage() {
-    $lang = explode('_', CRM_Core_Config::singleton()->lcMessages);
+    global $tsLocale;
+    $lang = substr($tsLocale, 0, 2);
     $validLangs = array('fr', 'en', 'de', 'it', 'es', 'nl', 'pt', 'sv');
-    if(in_array($lang[0], $validLangs)) {
-      return strtoupper($lang[0]);
+    if(in_array($lang, $validLangs)) {
+      return strtoupper($lang);
     }
     return 'FR';
   }
