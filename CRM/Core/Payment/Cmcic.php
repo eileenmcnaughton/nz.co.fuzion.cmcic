@@ -126,7 +126,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     ));
 
     if ($component == 'event') {
-      $merchantRef = $params['contactID'] . "-" . $params['description'];//, 27, 20), 0, 24);
+      $merchantRef = $params['contactID'] . "-" . $params['eventID'];//, 27, 20), 0, 24);
     }
     elseif ($component == 'contribute') {
       $merchantRef = $params['contactID'] . "-" . $params['contributionID'];// . " " . substr($params['description'], 20, 20), 0, 24);
@@ -188,7 +188,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
   function urlEncodeField($value, $fieldlength) {
     //@todo - we need to do more testing about the encoding - at this stage we have stopped
     // passing description strings until we can sort
-    return htmlentities(substr($value, $length));
+    return htmlentities(substr($value, $fieldlength));
 
     /**
     $string = substr(rawurlencode($value), 0, $fieldlength);
