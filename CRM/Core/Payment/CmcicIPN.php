@@ -143,7 +143,7 @@ class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
     $successfulResults = array('payetest', 'paiement');
     $resultCode = $this->retrieve('code-retour', 'String');
     $contributionID = $this->retrieve('reference', 'Integer');
-    $trxn_id = $contributionID . '-' . $this->retrieve('numauto', 'String');
+    $trxn_id = $contributionID . '-' . $this->retrieve('numauto', 'String', FALSE);
 
     if(in_array($resultCode, $successfulResults)) {
       if($resultCode == 'payetest') {
