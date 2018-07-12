@@ -15,8 +15,15 @@
     <ver>4.2</ver>
     <ver>4.4</ver>
   </compatibility>
-  <comments>CMCIC Payment processor. You need to configure the return url with your bank to
-  https://yoursite/civicrm/payment/ipn?processor_id=x where x is your id</comments>
+  <comments>CMCIC Payment processor. You need to configure the return URL with your bank to
+  https://yoursite/civicrm/payment/ipn?processor_id=X
+  where X is your gateway processor ID.
+  If your contribution page is at
+  https://yoursite/index.php?option=com_civicrm&task=civicrm/contribute/transact&reset=1&id=X
+  where X is your contribution page ID, then the return URL should be
+  https://yoursite/index.php?option=com_civicrm&task=civicrm/payment/ipn&processor_id=X
+  where X is your gateway processor ID.
+  </comments>
   <civix>
     <namespace>CRM/Cmcic</namespace>
   </civix>
