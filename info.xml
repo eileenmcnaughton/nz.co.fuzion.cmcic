@@ -19,9 +19,9 @@
   https://yoursite/civicrm/payment/ipn?processor_id=X
   where X is your gateway processor ID.
   If your contribution page is at
-  https://yoursite/index.php?option=com_civicrm&task=civicrm/contribute/transact&reset=1&id=X
+  https://yoursite/index.php?option=com_civicrm&amp;task=civicrm/contribute/transact&amp;reset=1&amp;id=X
   where X is your contribution page ID, then the return URL should be
-  https://yoursite/index.php?option=com_civicrm&task=civicrm/payment/ipn&processor_id=X
+  https://yoursite/index.php?option=com_civicrm&amp;task=civicrm/payment/ipn&amp;processor_id=X
   where X is your gateway processor ID.
   </comments>
   <civix>
