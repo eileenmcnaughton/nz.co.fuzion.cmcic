@@ -129,8 +129,7 @@ class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
    * @todo the references to POST throughout this class need to be removed
    * @return void|boolean|Ambigous <void, boolean>
    */
-  function main() {
-    $paymentProcessor = civicrm_api3('payment_processor', 'getsingle', array('id' => $this->retrieve('processor_id', 'Integer', TRUE)));
+  function main($paymentProcessor) {
     //we say contribute here as a dummy param as we are using the api to complete & we don't need to know
     $this->_paymentProcessor = new CRM_Core_Payment_Cmcic('contribute', $paymentProcessor);
     if(!$this->cmcic_validate_response()) {
