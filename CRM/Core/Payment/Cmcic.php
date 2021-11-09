@@ -89,7 +89,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    * @access public
    *
    */
-  function doTransferCheckout(&$params, $component) {
+  function doTransferCheckout(&$params, $component = 'contribute') {
     $component = strtolower($component);
     if ($component == 'event') {
       $baseURL = 'civicrm/event/register';
@@ -272,25 +272,10 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     return $this->_algorithm;
   }
 
-  function handlePaymentNotification(){
-    $logTableExists = FALSE;
-    $checkTable = "SHOW TABLES LIKE 'civicrm_notification_log'";
-    $dao = CRM_Core_DAO::executeQuery($checkTable);
-    if(!$dao->N) {
-      CRM_Core_DAO::executeQuery("CREATE TABLE IF NOT EXISTS `civicrm_notification_log` (
-      `id` INT(10) NOT NULL AUTO_INCREMENT,
-      `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      `message_type` VARCHAR(255) NULL DEFAULT NULL,
-      `message_raw` LONGTEXT NULL,
-       PRIMARY KEY (`id`)
-      )");
-    }
-
-    $dao = CRM_Core_DAO::executeQuery("INSERT INTO civicrm_notification_log (message_raw, message_type) VALUES (%1, 'cmcic')",
-      array(1 => array(json_encode($_REQUEST), 'String'))
-    );
+  function handlePaymentNotification() {
     $ipn = new CRM_Core_Payment_CmcicIPN(array_merge($_REQUEST, array('exit_mode' => TRUE)));
-    $ipn->main();
+    $ipn->main($this->_paymentProcessor);
+
     //if for any reason we come back here
     CRM_Core_Error::debug_log_message( "It should not be possible to reach this line" );
   }
