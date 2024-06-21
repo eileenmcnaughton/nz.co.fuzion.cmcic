@@ -24,7 +24,7 @@ class CRM_Cmcic_Page_Cmcic extends CRM_Core_Page{
     $this->assign('fields', $params);
     $this->assign('url', CRM_Utils_Request::retrieve('submit_to', 'String'));
     $smarty = CRM_Core_Smarty::singleton();
-    echo $smarty->fetch("string:" . $this->getText());
+    echo CRM_Utils_String::parseOneOffStringThroughSmarty($this->getText());
     die;
     parent::run();
   }
