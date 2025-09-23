@@ -8,11 +8,11 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2024-07-20</releaseDate>
+  <releaseDate>2025-09-24</releaseDate>
   <version>1.4</version>
   <develStage>alpha</develStage>
   <compatibility>
-    <ver>5.69</ver>
+    <ver>6.1</ver>
   </compatibility>
   <comments>CMCIC Payment processor. You need to configure the return URL with your bank to
   https://yoursite/civicrm/payment/ipn?processor_id=X
