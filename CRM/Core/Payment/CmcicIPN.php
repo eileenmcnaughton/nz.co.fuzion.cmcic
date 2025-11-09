@@ -167,7 +167,7 @@ class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
    * @param int $contributionID
    */
   function processFailedTransaction($contributionID) {
-   Contribution::update(FALSE)->setValues([
+   \Civi\Api4\Contribution::update(FALSE)->setValues([
      'cancel_date' => 'now',
      'contribution_status_id:name' => 'Failed',
    ])->addWhere('id', '=', $contributionID)->execute();
