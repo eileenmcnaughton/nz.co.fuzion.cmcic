@@ -162,33 +162,15 @@ class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
   }
 
   /**
-   * Process failed transaction - would be nice to do this through api too but for now lets put in
-   * here - this is a copy & paste of the completetransaction api
-   * @param unknown $contributionID
+   * Process failed transaction.
+   *
+   * @param int $contributionID
    */
   function processFailedTransaction($contributionID) {
-    $input = $ids = array();
-    $contribution = new CRM_Contribute_BAO_Contribution();
-    $contribution->id = $contributionID;
-    $contribution->find(TRUE);
-    if(!$contribution->id == $contributionID){
-      throw new Exception('A valid contribution ID is required', 'invalid_data');
-    }
-    try {
-      if(!$contribution->loadRelatedObjects($input, $ids, FALSE, TRUE)){
-        throw new Exception('failed to load related objects');
-      }
-      $objects = $contribution->_relatedObjects;
-      $objects['contribution'] = &$contribution;
-      $input['component'] = $contribution->_component;
-      $input['is_test'] = $contribution->is_test;
-      $input['amount'] = $contribution->total_amount;
-      // @todo required for base ipn but problematic as api layer handles this
-      $transaction = new CRM_Core_Transaction();
-      $ipn = new CRM_Core_Payment_BaseIPN();
-      $ipn->failed($objects, $transaction, $input);
-    }
-    catch (Exception $e) {
-    }
+   Contribution::update(FALSE)->setValues([
+     'cancel_date' => 'now',
+     'contribution_status_id:name' => 'Failed',
+   ])->addWhere('id', '=', $contributionID)->execute();
+   Civi::log()->debug("Setting contribution status to Failed");
   }
 }
