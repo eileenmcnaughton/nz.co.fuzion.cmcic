@@ -186,18 +186,6 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
   }
 
   /**
-   * calculate MAC key
-   * @param unknown $key
-   * @param unknown $params
-   * @param unknown $algorithm
-   * @return string
-   */
-  private function encodeMac($params) {
-    $string = implode('*', $params) . '**********';
-    return hash_hmac($this->getAlgorithm(), $string, $this->getKey());
-  }
-
-  /**
    * format key - adapted from drupal commerce module
    * @param unknown $key
    * @return string
