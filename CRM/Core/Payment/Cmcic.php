@@ -173,7 +173,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
   function urlEncodeField($value, $fieldlength) {
     //@todo - we need to do more testing about the encoding - at this stage we have stopped
     // passing description strings until we can sort
-    return htmlentities(substr($value, $fieldlength));
+    return substr($value, 0, $fieldlength);
 
     /**
     $string = substr(rawurlencode($value), 0, $fieldlength);
