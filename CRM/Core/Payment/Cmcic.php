@@ -141,7 +141,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     $lang = $this->getLanguage();
 
     $paymentParams = array(
-      'url_retour' => $returnURL,
+      'url_retour' => $returnUrl,
       'submit_to' => $this->_paymentProcessor['url_site'],
       'url_retour_ok' => $returnOKURL,
       'url_retour_err' => $cancelURL,
