@@ -33,6 +33,15 @@ class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
   }
 
   /**
+   * Store payment processor input for later validation and processing.
+   *
+   * @param array $inputParameters
+   */
+  function setInputParameters($inputParameters) {
+    $this->_inputParameters = $inputParameters;
+  }
+
+  /**
    * output required response for CMCIC process
    * @param boolean $mac_ok
    * @return string
