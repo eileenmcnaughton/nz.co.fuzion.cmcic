@@ -89,7 +89,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    * @access public
    *
    */
-  function doTransferCheckout(&$params, $component = 'contribute') {
+  function doPayment(&$params, $component = 'contribute') {
     $component = strtolower($component);
     if ($component == 'event') {
       $baseURL = 'civicrm/event/register';
