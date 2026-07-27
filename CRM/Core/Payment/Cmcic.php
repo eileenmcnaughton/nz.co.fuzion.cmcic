@@ -93,37 +93,31 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     $component = strtolower($component);
     if ($component == 'event') {
       $baseURL = 'civicrm/event/register';
-      $cancelURL = urlencode(CRM_Utils_System::url($baseURL, array(
+      $cancelURL = CRM_Utils_System::url($baseURL, array(
         'reset' => 1,
         'cc' => 'fail',
         'participantId' => $orderID[4],
       ),
       TRUE, NULL, FALSE
-      ));
+      );
     }
     elseif ($component == 'contribute') {
       $baseURL = 'civicrm/contribute/transact';
-      $cancelURL = urlencode(CRM_Utils_System::url($baseURL, array(
+      $cancelURL = CRM_Utils_System::url($baseURL, array(
         '_qf_Main_display' => 1,
         'qfKey' => $params['qfKey'],
         'cancel' => 1,
         ),
         TRUE, NULL, FALSE
-      ));
+      );
     }
 
-    $returnOKURL = urlencode(CRM_Utils_System::url($baseURL,array(
+    $returnOKURL = CRM_Utils_System::url($baseURL,array(
       '_qf_ThankYou_display' => 1,
        'qfKey' => $params['qfKey']
       ),
       TRUE, NULL, FALSE
-    ));
-    $returnUrl = urlencode(CRM_Utils_System::url($baseURL,array(
-      '_qf_Confirm_display' => 'true',
-       'qfKey' => $params['qfKey']
-      ),
-      TRUE, NULL, FALSE
-    ));
+    );
 
     if ($component == 'event') {
       $merchantRef = $params['contactID'] . "-" . $params['eventID'];//, 27, 20), 0, 24);
@@ -141,42 +135,33 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     $lang = $this->getLanguage();
 
     $paymentParams = array(
-      'url_retour' => $returnUrl,
-      'submit_to' => $this->_paymentProcessor['url_site'],
+      'TPE' => $this->_paymentProcessor['user_name'],
+      'contexte_commande' => CRM_Core_Payment_CmcicOrderContext::buildFromPaymentParams($params),
+      'date' => date("d/m/Y:H:i:s"),
+      'lgue' => $lang,
+      'mail' => $email,
+      'montant' => str_replace(",", "", number_format($params['amount'], 2)) . $params['currencyID'],
+      'reference' => $params['contributionID'],
+      'societe' => $this->_paymentProcessor['signature'],
+      'texte-libre' => $this->urlEncodeField($merchantRef, 24),
       'url_retour_ok' => $returnOKURL,
       'url_retour_err' => $cancelURL,
-      'sealed_params' => array(
-        'TPE' => $this->_paymentProcessor['user_name'],
-        'date' => date("d/m/Y:H:i:s"),
-        'montant' => str_replace(",", "", number_format($params['amount'], 2)) . $params['currencyID'],
-        'reference' => $params['contributionID'], //$merchantRef,
-        'texte-libre' => $this->urlEncodeField($merchantRef, 24), //$privateData . $params['qfKey'] . $component . ",".$this->_paymentProcessor['id'],
-        'version' => '3.0',
-        //@todo - get language code
-        'lgue' => $lang,
-        'societe' => $this->_paymentProcessor['signature'],
-        'mail' => $email,
-      ),
+      'version' => '3.0',
     );
 
     // Allow further manipulation of params via custom hooks
     CRM_Utils_Hook::alterPaymentProcessorParams($this, $params, $paymentParams);
-    $paymentParams['MAC'] = $this->encodeMac($paymentParams['sealed_params']);
-    $paymentParams = array_merge($paymentParams, $paymentParams['sealed_params']);
-    unset($paymentParams['sealed_params']);
-    $query_string = '';
-    foreach ($paymentParams as $name => $value) {
-      $query_string .= $name . '=' . $value . '&';
-    }
+    $paymentParams['MAC'] = CRM_Core_Payment_CmcicHmac::calculate(
+      $paymentParams,
+      $this->getKey(),
+      $this->getAlgorithm()
+    );
 
-    // Remove extra &
-    $query_string = rtrim($query_string, '&');
-
-    // Redirect the user to the payment url.
-    CRM_Utils_System::redirect($this->_paymentProcessor['url_site'] . '?' . $query_string);
-    // looks like we dodged the bullet on POST being required. may as well keep this & the page
-    // in case they tighten up later
-    // CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cmcic', $paymentParams));
+    CRM_Core_Session::singleton()->set('checkout', array(
+      'fields' => $paymentParams,
+      'url' => $this->_paymentProcessor['url_site'],
+    ), 'cmcic');
+    CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cmcic', array('reset' => 1)));
   }
 
   /**
