@@ -73,40 +73,39 @@ class CRM_Core_Payment_CmcicIPN {
       return FALSE;
     }
 
-    $ordered_fields = array();
-    $list           = array(
-      'TPE',
-      'date',
-      'montant',
-      'reference',
-      'texte-libre',
-      'version',
-      'code-retour',
-      'cvx',
-      'vld',
-      'brand',
-      'status3ds',
-      'numauto',
-      'motifrefus',
-      'originecb',
-      'bincb',
-      'hpancb',
-      'ipclient',
-      'originetr',
-      'veres',
-      'pares',
-    );
-
-    foreach ($list as $name) {
-      $ordered_fields[$name] = isset($fields[$name]) ? $fields[$name] : '';
+    unset($fields['MAC'], $fields['exit_mode']);
+    foreach ($fields as $name => $value) {
+      $fields[$name] = str_replace(' ', '+', $value);
     }
 
-    $ordered_fields['version'] = '3.0';
-    $ordered_fields[] = '';
+    $mac = CRM_Core_Payment_CmcicHmac::calculate(
+      $fields,
+      $this->_paymentProcessor->getKey(),
+      $this->_paymentProcessor->getAlgorithm()
+    );
+    if (hash_equals(strtolower($mac), strtolower($this->_inputParameters['MAC']))) {
+      return TRUE;
+    }
 
-    $mac = hash_hmac($this->_paymentProcessor->getAlgorithm(), implode('*', $ordered_fields), $this->_paymentProcessor->getKey());
+    $legacyFields = array();
+    $legacyNames = array(
+      'TPE', 'date', 'montant', 'reference', 'texte-libre', 'version',
+      'code-retour', 'cvx', 'vld', 'brand', 'status3ds', 'numauto',
+      'motifrefus', 'originecb', 'bincb', 'hpancb', 'ipclient', 'originetr',
+      'veres', 'pares',
+    );
+    foreach ($legacyNames as $name) {
+      $legacyFields[$name] = isset($this->_inputParameters[$name]) ? $this->_inputParameters[$name] : '';
+    }
+    $legacyFields['version'] = '3.0';
+    $legacyFields[] = '';
+    $legacyMac = hash_hmac(
+      $this->_paymentProcessor->getAlgorithm(),
+      implode('*', $legacyFields),
+      $this->_paymentProcessor->getKey()
+    );
 
-    return (strtolower($mac) == strtolower($fields['MAC']));
+    return hash_equals(strtolower($legacyMac), strtolower($this->_inputParameters['MAC']));
   }
 
   /**
