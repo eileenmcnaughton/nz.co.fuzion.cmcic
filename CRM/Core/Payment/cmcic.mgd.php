@@ -17,7 +17,7 @@ return array (
       'user_name_label' => 'POS terminal number',
       'password_label' => 'Merchant security key',
       'signature_label' => 'Site code',
-      'subject_label' => 'algorithm - defaults to md5',
+      'subject_label' => 'algorithm - defaults to sha1',
       'class_name' => 'Payment_Cmcic',
       'billing_mode' => 4,
       'url_site_default' => 'https://ssl.paiement.cic-banques.fr/test/paiement.cgi',
