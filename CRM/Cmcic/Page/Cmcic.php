@@ -8,8 +8,12 @@ class CRM_Cmcic_Page_Cmcic extends CRM_Core_Page{
     }
 
     CRM_Core_Session::singleton()->set('checkout', NULL, 'cmcic');
-    $this->assign('fields', $checkout['fields']);
-    $this->assign('url', $checkout['url']);
+    $fields = array();
+    foreach ($checkout['fields'] as $name => $value) {
+      $fields[htmlspecialchars($name, ENT_QUOTES, 'UTF-8')] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+    $this->assign('fields', $fields);
+    $this->assign('url', htmlspecialchars($checkout['url'], ENT_QUOTES, 'UTF-8'));
     $smarty = CRM_Core_Smarty::singleton();
     echo CRM_Utils_String::parseOneOffStringThroughSmarty($this->getText());
     die;
