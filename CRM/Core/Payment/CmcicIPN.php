@@ -1,6 +1,6 @@
 <?php
 
-class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
+class CRM_Core_Payment_CmcicIPN {
 
   static $_paymentProcessor = NULL;
 
@@ -29,7 +29,6 @@ class CRM_Core_Payment_CmcicIPN extends CRM_Core_Payment_BaseIPN{
   function __construct($inputData) {
     $this->setInputParameters($inputData);
     $this->_exitMode = !empty($inputData['exit_mode']);
-    parent::__construct();
   }
 
   /**
