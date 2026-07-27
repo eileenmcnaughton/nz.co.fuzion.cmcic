@@ -7,7 +7,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
 
   protected $_key = '';
 
-  protected $_algorithm = 'md5';
+  protected $_algorithm = 'sha1';
   /**
    * We only need one instance of this object. So we use the singleton
    * pattern and cache the instance in this variable
@@ -28,7 +28,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
 
     $this->_mode = $mode;
     $this->_key = $paymentProcessor['password'];
-    $this->_algorithm = empty($paymentProcessor['subject']) ? 'md5' : $paymentProcessor['subject'];
+    $this->_algorithm = empty($paymentProcessor['subject']) ? 'sha1' : $paymentProcessor['subject'];
 
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('CMCIC');
