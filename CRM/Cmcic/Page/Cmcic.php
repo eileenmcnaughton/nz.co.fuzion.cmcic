@@ -2,27 +2,14 @@
 
 class CRM_Cmcic_Page_Cmcic extends CRM_Core_Page{
   function run() {
-    $params = array();
-    $fields = array(
-      'version',
-      'TPE',
-      'date',
-      'montant',
-      'reference',
-      'url_retour',
-      'url_retour_ok',
-      'url_retour_err',
-      'lgue',
-      'societe',
-      'texte-libre',
-      'mail',
-      'MAC',
-    );
-    foreach ($fields as $field) {
-      $params[$field] = CRM_Utils_Request::retrieve($field, 'String');
+    $checkout = CRM_Core_Session::singleton()->get('checkout', 'cmcic');
+    if (empty($checkout['fields']) || empty($checkout['url'])) {
+      CRM_Core_Error::fatal(ts('Unable to start the Monetico checkout.'));
     }
-    $this->assign('fields', $params);
-    $this->assign('url', CRM_Utils_Request::retrieve('submit_to', 'String'));
+
+    CRM_Core_Session::singleton()->set('checkout', NULL, 'cmcic');
+    $this->assign('fields', $checkout['fields']);
+    $this->assign('url', $checkout['url']);
     $smarty = CRM_Core_Smarty::singleton();
     echo CRM_Utils_String::parseOneOffStringThroughSmarty($this->getText());
     die;
