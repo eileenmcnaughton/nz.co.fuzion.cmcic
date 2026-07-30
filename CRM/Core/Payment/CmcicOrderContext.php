@@ -45,6 +45,38 @@ class CRM_Core_Payment_CmcicOrderContext {
    * @return string
    */
   public static function buildFromPaymentParams($params) {
+    $contactId = !empty($params['contactID']) ? $params['contactID'] : (!empty($params['contact_id']) ? $params['contact_id'] : NULL);
+    if ($contactId && (empty($params['billingStreetAddress']) || empty($params['billingCity']) || empty($params['billingPostalCode']) || empty($params['billingCountry']))) {
+      $address = \Civi\Api4\Address::get(FALSE)
+        ->addSelect(
+          'street_address',
+          'supplemental_address_1',
+          'supplemental_address_2',
+          'city',
+          'postal_code',
+          'country_id'
+        )
+        ->addWhere('contact_id', '=', $contactId)
+        ->addOrderBy('is_billing', 'DESC')
+        ->addOrderBy('is_primary', 'DESC')
+        ->execute()
+        ->first();
+      if ($address) {
+        foreach (array(
+          'billingStreetAddress' => 'street_address',
+          'billingSupplementalAddress1' => 'supplemental_address_1',
+          'billingSupplementalAddress2' => 'supplemental_address_2',
+          'billingCity' => 'city',
+          'billingPostalCode' => 'postal_code',
+          'billingCountry' => 'country_id',
+        ) as $paymentField => $addressField) {
+          if (empty($params[$paymentField]) && !empty($address[$addressField])) {
+            $params[$paymentField] = $address[$addressField];
+          }
+        }
+      }
+    }
+
     $billing = array();
     $map = array(
       'firstName' => array('firstName', 'first_name'),
