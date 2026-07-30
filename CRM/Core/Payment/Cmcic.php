@@ -199,7 +199,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    *
    * @return string
    */
-  function startHostedCheckoutForContribution($contributionID, $landingURL) {
+  function startHostedCheckoutForContribution($contributionID, $successURL, $failureURL) {
     $contribution = civicrm_api3('Contribution', 'getsingle', array(
       'id' => $contributionID,
       'return' => array('contact_id', 'total_amount', 'currency'),
@@ -215,24 +215,10 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
 
     return $this->prepareHostedCheckout(
       $params,
-      $this->addHostedCheckoutReturnMarker($landingURL, 'ok'),
-      $this->addHostedCheckoutReturnMarker($landingURL, 'err'),
+      $successURL,
+      $failureURL,
       $merchantRef
     );
-  }
-
-  /**
-   * Add a non-authoritative browser return marker to the checkout landing URL.
-   *
-   * @param string $landingURL
-   * @param string $result
-   *
-   * @return string
-   */
-  function addHostedCheckoutReturnMarker($landingURL, $result) {
-    return $landingURL
-      . (strpos($landingURL, '?') === FALSE ? '?' : '&')
-      . 'cmcic_return=' . rawurlencode($result);
   }
 
   /**

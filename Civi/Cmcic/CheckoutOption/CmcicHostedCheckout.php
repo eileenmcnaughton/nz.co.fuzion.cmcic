@@ -59,9 +59,15 @@ class CmcicHostedCheckout implements CheckoutOptionInterface, AfformCheckoutOpti
       $connection['name'],
       $session->isTestMode()
     );
+    $session->setCheckoutParam('cmcic_return', 'ok');
+    $successURL = $session->getLandingUrl();
+    $session->setCheckoutParam('cmcic_return', 'err');
+    $failureURL = $session->getLandingUrl();
+    $session->setCheckoutParam('cmcic_return', NULL);
     $session->setResponseItem('redirect', $processor->startHostedCheckoutForContribution(
       $session->getContributionId(),
-      $session->getLandingUrl()
+      $successURL,
+      $failureURL
     ));
   }
 
@@ -90,6 +96,12 @@ class CmcicHostedCheckout implements CheckoutOptionInterface, AfformCheckoutOpti
     }
     if ($checkoutStatus === 'fail') {
       $session->fail();
+      return;
+    }
+    if ($session->getCheckoutParam('cmcic_return') === 'err') {
+      // The signed return token came from url_retour_err. A bank state of PA
+      // still wins above; otherwise the customer has abandoned or refused it.
+      $session->cancel();
       return;
     }
 
