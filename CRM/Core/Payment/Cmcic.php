@@ -91,6 +91,14 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    */
   function doPayment(&$params, $component = 'contribute') {
     $component = strtolower($component);
+    $contributionID = !empty($params['contributionID']) ? $params['contributionID'] : (!empty($params['contribution_id']) ? $params['contribution_id'] : NULL);
+    if (!$contributionID) {
+      Civi::log()->error('Cannot start Monetico checkout without a contribution ID.', array(
+        'parameter_keys' => array_keys($params),
+      ));
+      throw new CRM_Core_Exception(ts('Unable to prepare the payment reference.'));
+    }
+
     if ($component == 'event') {
       $baseURL = 'civicrm/event/register';
       $cancelURL = CRM_Utils_System::url($baseURL, array(
@@ -123,7 +131,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
       $merchantRef = $params['contactID'] . "-" . $params['eventID'];//, 27, 20), 0, 24);
     }
     elseif ($component == 'contribute') {
-      $merchantRef = $params['contactID'] . "-" . $params['contributionID'];// . " " . substr($params['description'], 20, 20), 0, 24);
+      $merchantRef = $params['contactID'] . "-" . $contributionID;// . " " . substr($params['description'], 20, 20), 0, 24);
     }
     $emailFields  = array('email', 'email-Primary', 'email-5');
     $email = '';
@@ -141,7 +149,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
       'lgue' => $lang,
       'mail' => $email,
       'montant' => str_replace(",", "", number_format($params['amount'], 2)) . $params['currencyID'],
-      'reference' => $params['contributionID'],
+      'reference' => $contributionID,
       'societe' => $this->_paymentProcessor['signature'],
       'texte-libre' => $this->urlEncodeField($merchantRef, 24),
       'url_retour_ok' => $returnOKURL,
