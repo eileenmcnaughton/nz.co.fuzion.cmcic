@@ -73,21 +73,24 @@ class CmcicHostedCheckout implements CheckoutOptionInterface, AfformCheckoutOpti
         $session->isTestMode()
       );
       $checkoutStatus = $processor->synchronizeHostedCheckoutContribution($session->getContributionId());
-      if ($checkoutStatus === 'success') {
-        $session->success();
-        return;
-      }
-      if ($checkoutStatus === 'cancel') {
-        $session->cancel();
-        return;
-      }
-      if ($checkoutStatus === 'fail') {
-        $session->fail();
-        return;
-      }
     }
     catch (\Throwable $e) {
       \Civi::log()->warning('Unable to retrieve the Monetico payment status: ' . $e->getMessage());
+      $session->pending();
+      return;
+    }
+
+    if ($checkoutStatus === 'success') {
+      $session->success();
+      return;
+    }
+    if ($checkoutStatus === 'cancel') {
+      $session->cancel();
+      return;
+    }
+    if ($checkoutStatus === 'fail') {
+      $session->fail();
+      return;
     }
 
     $session->pending();
