@@ -274,19 +274,41 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
       civicrm_api3('contribution', 'completetransaction', array(
         'id' => $contributionID,
         'trxn_id' => $trxnId,
+        'payment_processor_id' => $this->_paymentProcessor['id'],
       ));
     }
     elseif ($checkoutStatus === 'cancel' || $checkoutStatus === 'fail') {
-      \Civi\Api4\Contribution::update(FALSE)
-        ->setValues(array(
-          'cancel_date' => 'now',
-          'contribution_status_id:name' => $checkoutStatus === 'cancel' ? 'Cancelled' : 'Failed',
-        ))
-        ->addWhere('id', '=', $contributionID)
-        ->execute();
+      $this->setHostedCheckoutContributionStatus(
+        $contributionID,
+        $checkoutStatus === 'cancel' ? 'Cancelled' : 'Failed'
+      );
     }
 
     return $checkoutStatus;
+  }
+
+  /**
+   * Cancel a hosted checkout after a signed error return.
+   *
+   * @param int $contributionID
+   */
+  function cancelHostedCheckoutContribution($contributionID) {
+    $this->setHostedCheckoutContributionStatus($contributionID, 'Cancelled');
+  }
+
+  /**
+   * Persist a terminal checkout status with the processor financial account.
+   *
+   * @param int $contributionID
+   * @param string $status
+   */
+  function setHostedCheckoutContributionStatus($contributionID, $status) {
+    civicrm_api3('contribution', 'create', array(
+      'id' => $contributionID,
+      'contribution_status_id' => $status,
+      'cancel_date' => 'now',
+      'payment_processor_id' => $this->_paymentProcessor['id'],
+    ));
   }
 
   /**

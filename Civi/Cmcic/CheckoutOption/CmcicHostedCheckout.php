@@ -101,6 +101,7 @@ class CmcicHostedCheckout implements CheckoutOptionInterface, AfformCheckoutOpti
     if ($session->getCheckoutParam('cmcic_return') === 'err') {
       // The signed return token came from url_retour_err. A bank state of PA
       // still wins above; otherwise the customer has abandoned or refused it.
+      $processor->cancelHostedCheckoutContribution($session->getContributionId());
       $session->cancel();
       return;
     }

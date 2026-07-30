@@ -158,6 +158,7 @@ class CRM_Core_Payment_CmcicIPN {
       civicrm_api3('contribution', 'completetransaction', array(
         'id' => $contributionID,
         'trxn_id' => $trxn_id,
+        'payment_processor_id' => $paymentProcessor['id'],
       ));
       $this->cmcic_receipt_exit(TRUE);
     }
