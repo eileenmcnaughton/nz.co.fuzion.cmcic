@@ -20,7 +20,7 @@ return array (
       'subject_label' => 'algorithm - defaults to sha1',
       'class_name' => 'Payment_Cmcic',
       'billing_mode' => 4,
-      'url_site_default' => 'https://ssl.paiement.cic-banques.fr/test/paiement.cgi',
+      'url_site_default' => 'https://p.monetico-services.com/test/paiement.cgi',
     ),
   ),
 );
