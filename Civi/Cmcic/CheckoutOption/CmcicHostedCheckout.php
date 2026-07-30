@@ -67,6 +67,26 @@ class CmcicHostedCheckout implements CheckoutOptionInterface, AfformCheckoutOpti
 
   public function continueCheckout(CheckoutSession $session): void {
     // The IPN, rather than an untrusted browser return, finalizes the payment.
+    $contribution = \Civi\Api4\Contribution::get(FALSE)
+      ->addSelect('contribution_status_id:name')
+      ->addWhere('id', '=', $session->getContributionId())
+      ->execute()
+      ->first();
+
+    switch ($contribution['contribution_status_id:name'] ?? NULL) {
+      case 'Completed':
+        $session->success();
+        return;
+
+      case 'Cancelled':
+        $session->cancel();
+        return;
+
+      case 'Failed':
+        $session->fail();
+        return;
+    }
+
     $session->pending();
   }
 
