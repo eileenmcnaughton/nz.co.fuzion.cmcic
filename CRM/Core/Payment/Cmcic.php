@@ -147,6 +147,11 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    * @return string
    */
   function prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef) {
+    $contributionID = !empty($params['contributionID']) ? $params['contributionID'] : (!empty($params['contribution_id']) ? $params['contribution_id'] : NULL);
+    if (!$contributionID) {
+      throw new CRM_Core_Exception(ts('Unable to prepare the payment reference.'));
+    }
+
     $emailFields  = array('email', 'email-Primary', 'email-5');
     $email = '';
     foreach ($emailFields as $emailField) {
