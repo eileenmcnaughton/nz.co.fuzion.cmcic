@@ -18,6 +18,26 @@ class CRM_Core_Payment_CmcicPaymentStatus {
   }
 
   /**
+   * Map Monetico's payment state to the CiviCRM Checkout state.
+   *
+   * @param string $state
+   *
+   * @return string
+   */
+  public static function getCheckoutStatus($state) {
+    if ($state === 'PA') {
+      return 'success';
+    }
+    if ($state === 'AN') {
+      return 'cancel';
+    }
+    if (in_array($state, array('RE', 'GR', 'AP'), TRUE)) {
+      return 'fail';
+    }
+    return 'pending';
+  }
+
+  /**
    * Retrieve a payment status from Monetico.
    *
    * @param array $fields

@@ -66,25 +66,28 @@ class CmcicHostedCheckout implements CheckoutOptionInterface, AfformCheckoutOpti
   }
 
   public function continueCheckout(CheckoutSession $session): void {
-    // The IPN, rather than an untrusted browser return, finalizes the payment.
-    $contribution = \Civi\Api4\Contribution::get(FALSE)
-      ->addSelect('contribution_status_id:name')
-      ->addWhere('id', '=', $session->getContributionId())
-      ->execute()
-      ->first();
-
-    switch ($contribution['contribution_status_id:name'] ?? NULL) {
-      case 'Completed':
+    try {
+      $connection = $this->getConnectionDetails($session->isTestMode());
+      $processor = \Civi\Payment\System::singleton()->getByName(
+        $connection['name'],
+        $session->isTestMode()
+      );
+      $checkoutStatus = $processor->synchronizeHostedCheckoutContribution($session->getContributionId());
+      if ($checkoutStatus === 'success') {
         $session->success();
         return;
-
-      case 'Cancelled':
+      }
+      if ($checkoutStatus === 'cancel') {
         $session->cancel();
         return;
-
-      case 'Failed':
+      }
+      if ($checkoutStatus === 'fail') {
         $session->fail();
         return;
+      }
+    }
+    catch (\Throwable $e) {
+      \Civi::log()->warning('Unable to retrieve the Monetico payment status: ' . $e->getMessage());
     }
 
     $session->pending();

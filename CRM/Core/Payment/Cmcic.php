@@ -236,6 +236,74 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
   }
 
   /**
+   * Query Monetico and reconcile a pending hosted checkout contribution.
+   *
+   * @param int $contributionID
+   *
+   * @return string CiviCRM Checkout status
+   */
+  function synchronizeHostedCheckoutContribution($contributionID) {
+    $contribution = \Civi\Api4\Contribution::get(FALSE)
+      ->addSelect('total_amount', 'currency', 'receive_date', 'contribution_status_id:name')
+      ->addWhere('id', '=', $contributionID)
+      ->execute()
+      ->single();
+
+    $existingStatus = $contribution['contribution_status_id:name'];
+    if ($existingStatus === 'Completed') {
+      return 'success';
+    }
+    if ($existingStatus === 'Cancelled') {
+      return 'cancel';
+    }
+    if ($existingStatus === 'Failed') {
+      return 'fail';
+    }
+
+    $orderDate = strtotime($contribution['receive_date']);
+    if (!$orderDate) {
+      throw new CRM_Core_Exception('Unable to determine the Monetico payment date.');
+    }
+
+    $paymentStatus = CRM_Core_Payment_CmcicPaymentStatus::query(
+      array(
+        'version' => '2.0',
+        'TPE' => $this->_paymentProcessor['user_name'],
+        'date' => date('d/m/Y', $orderDate),
+        'montant' => str_replace(',', '', number_format($contribution['total_amount'], 2)) . $contribution['currency'],
+        'reference' => (string) $contributionID,
+        'societe' => $this->_paymentProcessor['signature'],
+      ),
+      $this->getKey(),
+      $this->getAlgorithm(),
+      CRM_Core_Payment_CmcicPaymentStatus::getEndpoint($this->_mode === 'test')
+    );
+    $checkoutStatus = CRM_Core_Payment_CmcicPaymentStatus::getCheckoutStatus($paymentStatus['state']);
+
+    if ($checkoutStatus === 'success') {
+      $trxnId = $contributionID . '-' . ($paymentStatus['authorization_number'] ?: 'status');
+      if ($this->_mode === 'test') {
+        $trxnId = 'test' . $contributionID . uniqid();
+      }
+      civicrm_api3('contribution', 'completetransaction', array(
+        'id' => $contributionID,
+        'trxn_id' => $trxnId,
+      ));
+    }
+    elseif ($checkoutStatus === 'cancel' || $checkoutStatus === 'fail') {
+      \Civi\Api4\Contribution::update(FALSE)
+        ->setValues(array(
+          'cancel_date' => 'now',
+          'contribution_status_id:name' => $checkoutStatus === 'cancel' ? 'Cancelled' : 'Failed',
+        ))
+        ->addWhere('id', '=', $contributionID)
+        ->execute();
+    }
+
+    return $checkoutStatus;
+  }
+
+  /**
    * Cut field to correct length without truncating mid character
    * @param string $value
    * @param integer $fieldlength
