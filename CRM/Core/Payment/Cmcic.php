@@ -213,7 +213,26 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     );
     $merchantRef = $params['contactID'] . '-' . $contributionID;
 
-    return $this->prepareHostedCheckout($params, $landingURL, $landingURL, $merchantRef);
+    return $this->prepareHostedCheckout(
+      $params,
+      $this->addHostedCheckoutReturnMarker($landingURL, 'ok'),
+      $this->addHostedCheckoutReturnMarker($landingURL, 'err'),
+      $merchantRef
+    );
+  }
+
+  /**
+   * Add a non-authoritative browser return marker to the checkout landing URL.
+   *
+   * @param string $landingURL
+   * @param string $result
+   *
+   * @return string
+   */
+  function addHostedCheckoutReturnMarker($landingURL, $result) {
+    return $landingURL
+      . (strpos($landingURL, '?') === FALSE ? '?' : '&')
+      . 'cmcic_return=' . rawurlencode($result);
   }
 
   /**
