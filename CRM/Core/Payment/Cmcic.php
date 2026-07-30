@@ -133,6 +133,20 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     elseif ($component == 'contribute') {
       $merchantRef = $params['contactID'] . "-" . $contributionID;// . " " . substr($params['description'], 20, 20), 0, 24);
     }
+    CRM_Utils_System::redirect($this->prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef));
+  }
+
+  /**
+   * Prepare the existing Monetico POST checkout and return its local relay URL.
+   *
+   * @param array $params
+   * @param string $returnOKURL
+   * @param string $cancelURL
+   * @param string $merchantRef
+   *
+   * @return string
+   */
+  function prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef) {
     $emailFields  = array('email', 'email-Primary', 'email-5');
     $email = '';
     foreach ($emailFields as $emailField) {
@@ -169,7 +183,32 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
       'fields' => $paymentParams,
       'url' => $this->_paymentProcessor['url_site'],
     ), 'cmcic');
-    CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cmcic', array('reset' => 1)));
+    return CRM_Utils_System::url('civicrm/cmcic', array('reset' => 1));
+  }
+
+  /**
+   * Prepare a hosted checkout for a contribution created by CiviCRM Checkout.
+   *
+   * @param int $contributionID
+   * @param string $landingURL
+   *
+   * @return string
+   */
+  function startHostedCheckoutForContribution($contributionID, $landingURL) {
+    $contribution = civicrm_api3('Contribution', 'getsingle', array(
+      'id' => $contributionID,
+      'return' => array('contact_id', 'total_amount', 'currency'),
+    ));
+
+    $params = array(
+      'contributionID' => $contributionID,
+      'contactID' => $contribution['contact_id'],
+      'amount' => $contribution['total_amount'],
+      'currencyID' => $contribution['currency'],
+    );
+    $merchantRef = $params['contactID'] . '-' . $contributionID;
+
+    return $this->prepareHostedCheckout($params, $landingURL, $landingURL, $merchantRef);
   }
 
   /**
