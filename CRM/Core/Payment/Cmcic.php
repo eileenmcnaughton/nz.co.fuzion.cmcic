@@ -133,6 +133,25 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     elseif ($component == 'contribute') {
       $merchantRef = $params['contactID'] . "-" . $contributionID;// . " " . substr($params['description'], 20, 20), 0, 24);
     }
+    CRM_Utils_System::redirect($this->prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef));
+  }
+
+  /**
+   * Prepare the existing Monetico POST checkout and return its local relay URL.
+   *
+   * @param array $params
+   * @param string $returnOKURL
+   * @param string $cancelURL
+   * @param string $merchantRef
+   *
+   * @return string
+   */
+  function prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef) {
+    $contributionID = !empty($params['contributionID']) ? $params['contributionID'] : (!empty($params['contribution_id']) ? $params['contribution_id'] : NULL);
+    if (!$contributionID) {
+      throw new CRM_Core_Exception(ts('Unable to prepare the payment reference.'));
+    }
+
     $emailFields  = array('email', 'email-Primary', 'email-5');
     $email = '';
     foreach ($emailFields as $emailField) {
@@ -169,7 +188,127 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
       'fields' => $paymentParams,
       'url' => $this->_paymentProcessor['url_site'],
     ), 'cmcic');
-    CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/cmcic', array('reset' => 1)));
+    return CRM_Utils_System::url('civicrm/cmcic', array('reset' => 1));
+  }
+
+  /**
+   * Prepare a hosted checkout for a contribution created by CiviCRM Checkout.
+   *
+   * @param int $contributionID
+   * @param string $landingURL
+   *
+   * @return string
+   */
+  function startHostedCheckoutForContribution($contributionID, $successURL, $failureURL) {
+    $contribution = civicrm_api3('Contribution', 'getsingle', array(
+      'id' => $contributionID,
+      'return' => array('contact_id', 'total_amount', 'currency'),
+    ));
+
+    $params = array(
+      'contributionID' => $contributionID,
+      'contactID' => $contribution['contact_id'],
+      'amount' => $contribution['total_amount'],
+      'currencyID' => $contribution['currency'],
+    );
+    $merchantRef = $params['contactID'] . '-' . $contributionID;
+
+    return $this->prepareHostedCheckout(
+      $params,
+      $successURL,
+      $failureURL,
+      $merchantRef
+    );
+  }
+
+  /**
+   * Query Monetico and reconcile a pending hosted checkout contribution.
+   *
+   * @param int $contributionID
+   *
+   * @return string CiviCRM Checkout status
+   */
+  function synchronizeHostedCheckoutContribution($contributionID) {
+    $contribution = \Civi\Api4\Contribution::get(FALSE)
+      ->addSelect('total_amount', 'currency', 'receive_date', 'contribution_status_id:name')
+      ->addWhere('id', '=', $contributionID)
+      ->execute()
+      ->single();
+
+    $existingStatus = $contribution['contribution_status_id:name'];
+    if ($existingStatus === 'Completed') {
+      return 'success';
+    }
+    if ($existingStatus === 'Cancelled') {
+      return 'cancel';
+    }
+    if ($existingStatus === 'Failed') {
+      return 'fail';
+    }
+
+    $orderDate = strtotime($contribution['receive_date']);
+    if (!$orderDate) {
+      throw new CRM_Core_Exception('Unable to determine the Monetico payment date.');
+    }
+
+    $paymentStatus = CRM_Core_Payment_CmcicPaymentStatus::query(
+      array(
+        'version' => '2.0',
+        'TPE' => $this->_paymentProcessor['user_name'],
+        'date' => date('d/m/Y', $orderDate),
+        'montant' => str_replace(',', '', number_format($contribution['total_amount'], 2)) . $contribution['currency'],
+        'reference' => (string) $contributionID,
+        'societe' => $this->_paymentProcessor['signature'],
+      ),
+      $this->getKey(),
+      $this->getAlgorithm(),
+      CRM_Core_Payment_CmcicPaymentStatus::getEndpoint($this->_mode === 'test')
+    );
+    $checkoutStatus = CRM_Core_Payment_CmcicPaymentStatus::getCheckoutStatus($paymentStatus['state']);
+
+    if ($checkoutStatus === 'success') {
+      $trxnId = $contributionID . '-' . ($paymentStatus['authorization_number'] ?: 'status');
+      if ($this->_mode === 'test') {
+        $trxnId = 'test' . $contributionID . uniqid();
+      }
+      civicrm_api3('contribution', 'completetransaction', array(
+        'id' => $contributionID,
+        'trxn_id' => $trxnId,
+        'payment_processor_id' => $this->_paymentProcessor['id'],
+      ));
+    }
+    elseif ($checkoutStatus === 'cancel' || $checkoutStatus === 'fail') {
+      $this->setHostedCheckoutContributionStatus(
+        $contributionID,
+        $checkoutStatus === 'cancel' ? 'Cancelled' : 'Failed'
+      );
+    }
+
+    return $checkoutStatus;
+  }
+
+  /**
+   * Cancel a hosted checkout after a signed error return.
+   *
+   * @param int $contributionID
+   */
+  function cancelHostedCheckoutContribution($contributionID) {
+    $this->setHostedCheckoutContributionStatus($contributionID, 'Cancelled');
+  }
+
+  /**
+   * Persist a terminal checkout status with the processor financial account.
+   *
+   * @param int $contributionID
+   * @param string $status
+   */
+  function setHostedCheckoutContributionStatus($contributionID, $status) {
+    civicrm_api3('contribution', 'create', array(
+      'id' => $contributionID,
+      'contribution_status_id' => $status,
+      'cancel_date' => 'now',
+      'payment_processor_id' => $this->_paymentProcessor['id'],
+    ));
   }
 
   /**
