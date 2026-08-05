@@ -31,9 +31,19 @@ Then in CiviCRM, configure the Payment Processor:
 
 Note that the TPE key/sha1/site code are the same for the dev and production configurations. Only the URL is different.
 
-## Return URL (or webhook)
+## Server notification URL ("interface Retour" / CGI2)
 
-The Monetico merchant support must be contacted to set the return URL.
+The Monetico merchant support must be contacted to configure this URL. It is
+separate from the browser return URLs sent by CiviCRM.
+
+Use the HTTPS route containing the CiviCRM payment processor ID:
+
+* Test: `https://crm.example.org/civicrm/payment/ipn/{test_processor_id}`
+* Production: `https://crm.example.org/civicrm/payment/ipn/{production_processor_id}`
+
+Do not use HTTP, port 80, or the `?processor_id=` query-string form. A HTTP to
+HTTPS redirect prevents Monetico from receiving the required `version=2` /
+`cdr=0` acknowledgement.
 
 ## Testing
 
