@@ -164,13 +164,16 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     }
     $lang = $this->getLanguage();
 
+    $cleanAmount = CRM_Utils_Rule::cleanMoney($params['amount'] ?? 0);
+    $formattedAmount = number_format((float) $cleanAmount, 2, '.', '');
+
     $paymentParams = array(
       'TPE' => $this->_paymentProcessor['user_name'],
       'contexte_commande' => CRM_Core_Payment_CmcicOrderContext::buildFromPaymentParams($params),
       'date' => date("d/m/Y:H:i:s"),
       'lgue' => $lang,
       'mail' => $email,
-      'montant' => str_replace(",", "", number_format($params['amount'], 2)) . $params['currencyID'],
+      'montant' => $formattedAmount . $params['currencyID'],
       'reference' => $contributionID,
       'societe' => $this->_paymentProcessor['signature'],
       'texte-libre' => $this->urlEncodeField($merchantRef, 24),
@@ -198,15 +201,27 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    * Prepare a hosted checkout for a contribution created by CiviCRM Checkout.
    *
    * @param int $contributionID
-   * @param string $landingURL
+   * @param array|string $urls
+   * @param string|null $failureURL
    *
    * @return string
    */
-  function startHostedCheckoutForContribution($contributionID, $successURL, $failureURL) {
-    $contribution = civicrm_api3('Contribution', 'getsingle', array(
-      'id' => $contributionID,
-      'return' => array('contact_id', 'total_amount', 'currency'),
-    ));
+  function startHostedCheckoutForContribution($contributionID, $urls = [], $failureURL = NULL) {
+    if (is_string($urls)) {
+      $urls = [
+        'return_url' => $urls,
+        'cancel_url' => $failureURL ?? $urls,
+      ];
+    }
+
+    $returnOKURL = $urls['return_url'] ?? ($urls['landing_url'] ?? '');
+    $cancelURL = $urls['cancel_url'] ?? ($urls['landing_url'] ?? '');
+
+    $contribution = \Civi\Api4\Contribution::get(FALSE)
+      ->addSelect('contact_id', 'total_amount', 'currency')
+      ->addWhere('id', '=', $contributionID)
+      ->execute()
+      ->single();
 
     $params = array(
       'contributionID' => $contributionID,
@@ -218,8 +233,8 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
 
     return $this->prepareHostedCheckout(
       $params,
-      $successURL,
-      $failureURL,
+      $returnOKURL,
+      $cancelURL,
       $merchantRef
     );
   }
@@ -259,7 +274,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
         'version' => '2.0',
         'TPE' => $this->_paymentProcessor['user_name'],
         'date' => date('d/m/Y', $orderDate),
-        'montant' => str_replace(',', '', number_format($contribution['total_amount'], 2)) . $contribution['currency'],
+        'montant' => number_format((float) CRM_Utils_Rule::cleanMoney($contribution['total_amount']), 2, '.', '') . $contribution['currency'],
         'reference' => (string) $contributionID,
         'societe' => $this->_paymentProcessor['signature'],
       ),
@@ -306,12 +321,11 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    * @param string $status
    */
   function setHostedCheckoutContributionStatus($contributionID, $status) {
-    civicrm_api3('contribution', 'create', array(
-      'id' => $contributionID,
-      'contribution_status_id' => $status,
+    \Civi\Api4\Contribution::update(FALSE)->setValues([
+      'contribution_status_id:name' => $status,
       'cancel_date' => 'now',
       'payment_processor_id' => $this->_paymentProcessor['id'],
-    ));
+    ])->addWhere('id', '=', $contributionID)->execute();
   }
 
   /**
@@ -395,11 +409,307 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
     return $this->_algorithm;
   }
 
-  function handlePaymentNotification() {
-    $ipn = new CRM_Core_Payment_CmcicIPN(array_merge($_REQUEST, array('exit_mode' => TRUE)));
+  public function handlePaymentNotification(): void {
+    // Prefer official Monetico HTTP POST notifications, falling back to $_GET only for manual replay
+    $inputData = !empty($_POST) ? $_POST : $_GET;
+    $ipn = new CRM_Core_Payment_CmcicIPN(array_merge($inputData, array('exit_mode' => TRUE)));
     $ipn->main($this->_paymentProcessor);
 
-    //if for any reason we come back here
-    CRM_Core_Error::debug_log_message( "It should not be possible to reach this line" );
+    // If for any reason we come back here
+    CRM_Core_Error::debug_log_message("It should not be possible to reach this line");
+  }
+
+  /**
+   * Declare refund capability based on setting.
+   *
+   * @return bool
+   */
+  public function supportsRefund(): bool {
+    $enabled = \Civi::settings()->get('cmcic_enable_refunds');
+    return $enabled === TRUE || $enabled === 1 || $enabled === '1';
+  }
+
+  /**
+   * Process a refund request via Monetico recredit_paiement API.
+   *
+   * @param array $params Contains trxn_id, amount, currency, contribution_id
+   * @return array Standard CiviCRM / MJWShared refund result array
+   * @throws CRM_Core_Exception
+   */
+  public function doRefund(&$params): array {
+    if (!$this->supportsRefund()) {
+      throw new CRM_Core_Exception(ts('Monetico online refunds are disabled. Enable setting cmcic_enable_refunds to proceed.'));
+    }
+
+    $contributionID = (int) ($params['contribution_id'] ?? $params['id'] ?? 0);
+    $currency = (string) ($params['currency'] ?? '');
+
+    if (!$contributionID && !empty($params['trxn_id'])) {
+      $payments = \Civi\Api4\Payment::get(FALSE)
+        ->addSelect('contribution_id')
+        ->addWhere('trxn_id', '=', $params['trxn_id'])
+        ->addWhere('payment_processor_id', '=', $this->_paymentProcessor['id'])
+        ->execute();
+      if (count($payments) > 1) {
+        throw new CRM_Core_Exception(sprintf("Multiple Monetico payments found matching trxn_id '%s'. Refund requires an explicit contribution_id.", $params['trxn_id']));
+      }
+      if (count($payments) === 1) {
+        $contributionID = (int) $payments->first()['contribution_id'];
+      }
+    }
+
+    if (!$contributionID) {
+      throw new CRM_Core_Exception(ts('Could not determine contribution reference for refund.'));
+    }
+
+    $contribution = \Civi\Api4\Contribution::get(FALSE)
+      ->addSelect('total_amount', 'currency', 'receive_date', 'is_test', 'contribution_status_id:name')
+      ->addWhere('id', '=', $contributionID)
+      ->execute()
+      ->single();
+
+    if (($contribution['contribution_status_id:name'] ?? '') === 'Refunded') {
+      throw new CRM_Core_Exception("Contribution #{$contributionID} is already marked as Refunded in CiviCRM.");
+    }
+
+    $isTest = !empty($contribution['is_test']);
+    $processor = $this->getOperationalProcessor($isTest ? 'test' : 'live');
+
+    $totalAmount = (float) ($contribution['total_amount'] ?? 0);
+    $orderCurrency = strtoupper((string) ($contribution['currency'] ?? 'EUR'));
+
+    if (!empty($currency) && strtoupper($currency) !== $orderCurrency) {
+      throw new CRM_Core_Exception(sprintf(
+        'Refund currency mismatch: requested %s, but contribution currency is %s.',
+        strtoupper($currency),
+        $orderCurrency
+      ));
+    }
+
+    $requestedRefundAmount = (float) CRM_Utils_Rule::cleanMoney($params['amount'] ?? $totalAmount);
+    if ($requestedRefundAmount <= 0) {
+      throw new CRM_Core_Exception(ts('Refund amount must be greater than zero.'));
+    }
+
+    // V1 Full Refund Rule: Must equal full contribution amount
+    if (abs($requestedRefundAmount - $totalAmount) >= 0.01) {
+      throw new CRM_Core_Exception(sprintf(
+        'Monetico V1 online refund supports full refunds only. Requested: %.2f %s, Total: %.2f %s.',
+        $requestedRefundAmount,
+        $orderCurrency,
+        $totalAmount,
+        $orderCurrency
+      ));
+    }
+
+    $receiveDate = strtotime((string) ($contribution['receive_date'] ?? 'now'));
+    $statusEndpoint = CRM_Core_Payment_CmcicPaymentStatus::getEndpoint($processor->_mode === 'test');
+
+    // Query Monetico EtatPaiement to verify bank-side status and already recredited amounts
+    $statusResult = CRM_Core_Payment_CmcicPaymentStatus::query(
+      array(
+        'version' => '2.0',
+        'TPE' => (string) $processor->_paymentProcessor['user_name'],
+        'date' => date('d/m/Y', $receiveDate ?: time()),
+        'montant' => number_format($totalAmount, 2, '.', '') . $orderCurrency,
+        'reference' => (string) $contributionID,
+        'societe' => (string) $processor->_paymentProcessor['signature'],
+      ),
+      $processor->getKey(),
+      $processor->getAlgorithm(),
+      $statusEndpoint
+    );
+
+    $bankState = (string) ($statusResult['state'] ?? '');
+    $capturedAmount = (float) ($statusResult['captured_amount'] ?? 0.0);
+
+    if ($bankState !== 'PA' || $capturedAmount <= 0.0) {
+      throw new CRM_Core_Exception(sprintf(
+        'Monetico refund rejected: contribution #%d is not in a captured paid state on Monetico (state: %s, captured: %.2f %s).',
+        $contributionID,
+        $bankState ?: 'unknown',
+        $capturedAmount,
+        $orderCurrency
+      ));
+    }
+
+    $alreadyRecredited = (float) ($statusResult['recredits_total'] ?? 0.0);
+    $soldeRemboursable = max(0.0, $capturedAmount - $alreadyRecredited);
+
+    if ($requestedRefundAmount > ($soldeRemboursable + 0.001)) {
+      throw new CRM_Core_Exception(sprintf(
+        'Monetico refund rejected: requested amount (%.2f %s) exceeds available Monetico refundable balance (%.2f %s).',
+        $requestedRefundAmount,
+        $orderCurrency,
+        $soldeRemboursable,
+        $orderCurrency
+      ));
+    }
+
+    if ($soldeRemboursable < 0.01 || $alreadyRecredited >= $totalAmount) {
+      throw new CRM_Core_Exception(sprintf(
+        'Monetico refund rejected: contribution #%d has already been refunded on Monetico portal (already recredited: %.2f %s).',
+        $contributionID,
+        $alreadyRecredited,
+        $orderCurrency
+      ));
+    }
+
+    $refundResult = $processor->callMoneticoRecreditApi(
+      $contributionID,
+      $requestedRefundAmount,
+      $orderCurrency,
+      $soldeRemboursable,
+      date('d/m/Y', $receiveDate ?: time())
+    );
+
+    \Civi::log()->info(sprintf(
+      'Monetico recredit successful for contribution #%d: %.2f %s (refund_trxn_id: %s)',
+      $contributionID,
+      $requestedRefundAmount,
+      $orderCurrency,
+      $refundResult['refund_trxn_id']
+    ));
+
+    return array(
+      'refund_trxn_id' => $refundResult['refund_trxn_id'],
+      'refund_status' => 'Completed',
+      'fee_amount' => 0,
+    );
+  }
+
+  /**
+   * Send a signed HTTP POST request to Monetico recredit_paiement.cgi API.
+   *
+   * @param int $contributionID
+   * @param float $refundAmount
+   * @param string $currency
+   * @param float $soldeRemboursable
+   * @param string $dateCommande
+   * @return array
+   * @throws CRM_Core_Exception
+   */
+  protected function callMoneticoRecreditApi(
+    int $contributionID,
+    float $refundAmount,
+    string $currency,
+    float $soldeRemboursable,
+    string $dateCommande
+  ): array {
+    $contribution = \Civi\Api4\Contribution::get(FALSE)
+      ->addSelect('total_amount')
+      ->addWhere('id', '=', $contributionID)
+      ->execute()
+      ->single();
+
+    $totalAmount = (float) ($contribution['total_amount'] ?? $refundAmount);
+    $formattedTotal = number_format($totalAmount, 2, '.', '');
+    $formattedRefund = number_format($refundAmount, 2, '.', '');
+    $formattedPossible = number_format($soldeRemboursable, 2, '.', '');
+
+    $fields = array(
+      'version' => '3.0',
+      'TPE' => (string) $this->_paymentProcessor['user_name'],
+      'date' => date('d/m/Y:H:i:s'),
+      'date_commande' => $dateCommande,
+      'montant' => $formattedTotal . $currency,
+      'montant_recredit' => $formattedRefund . $currency,
+      'montant_possible' => $formattedPossible . $currency,
+      'reference' => (string) $contributionID,
+      'lgue' => 'FR',
+      'societe' => (string) $this->_paymentProcessor['signature'],
+    );
+
+    $fields['MAC'] = CRM_Core_Payment_CmcicHmac::calculate(
+      $fields,
+      $this->getKey(),
+      $this->getAlgorithm()
+    );
+
+    $baseUrl = $this->_mode === 'test'
+      ? 'https://payment-api.e-i.com/test/recredit_paiement.cgi'
+      : 'https://payment-api.e-i.com/recredit_paiement.cgi';
+
+    $httpClient = new \GuzzleHttp\Client(array(
+      'connect_timeout' => 5,
+      'timeout' => 15,
+      'verify' => TRUE,
+    ));
+
+    try {
+      $response = $httpClient->post($baseUrl, array(
+        'form_params' => $fields,
+        'headers' => array(
+          'Content-Type' => 'application/x-www-form-urlencoded',
+          'Accept' => 'text/plain',
+        ),
+        'http_errors' => FALSE,
+      ));
+      $body = (string) $response->getBody();
+    }
+    catch (\Throwable $e) {
+      throw new CRM_Core_Exception('Monetico recredit HTTP request failed: ' . $e->getMessage());
+    }
+
+    $parsed = array();
+    $lines = explode("\n", str_replace("\r", "", $body));
+    foreach ($lines as $line) {
+      if (str_contains($line, '=')) {
+        list($k, $v) = explode('=', trim($line), 2);
+        $parsed[trim($k)] = trim($v);
+      }
+    }
+
+    $cdr = (string) ($parsed['cdr'] ?? '-1');
+    if ($cdr !== '0') {
+      $errorDescriptions = array(
+        '-46' => 'La commande est déjà entièrement recréditée.',
+        '-48' => 'Échec du recrédit (recrédit partiel non permis ou rejeté par la banque).',
+        '-51' => 'Le recrédit global n\'est pas permis pour cette commande.',
+        '-52' => 'Le montant déjà recrédité est incorrect.',
+      );
+      $errorMsg = $errorDescriptions[$cdr] ?? ("Code d'erreur Monetico: cdr=" . $cdr);
+      throw new CRM_Core_Exception('Échec du remboursement Monetico: ' . $errorMsg);
+    }
+
+    return array(
+      'cdr' => '0',
+      'refund_trxn_id' => 'recredit-' . $contributionID . '-' . time(),
+      'response' => $parsed,
+    );
+  }
+
+  /**
+   * Resolve the operational payment processor instance (live or test sibling).
+   *
+   * @param string $mode 'test' or 'live'
+   * @return CRM_Core_Payment_Cmcic
+   */
+  public function getOperationalProcessor(string $mode = 'live'): CRM_Core_Payment_Cmcic {
+    $current = $this->getPaymentProcessor();
+    $requestedIsTest = ($mode === 'test');
+    $currentIsTest = !empty($current['is_test']) || ($this->_mode === 'test');
+
+    if ($currentIsTest === $requestedIsTest) {
+      return $this;
+    }
+
+    $instance = \Civi\Payment\System::singleton()->getByName(
+      (string) ($current['name'] ?? ''),
+      $requestedIsTest
+    );
+
+    if (
+      !($instance instanceof CRM_Core_Payment_Cmcic)
+      || ((bool) !empty($instance->getPaymentProcessor()['is_test'])) !== $requestedIsTest
+    ) {
+      throw new CRM_Core_Exception(sprintf(
+        'Could not resolve operational %s Monetico payment processor for processor #%d.',
+        $mode,
+        (int) ($current['id'] ?? 0)
+      ));
+    }
+
+    return $instance;
   }
 }
