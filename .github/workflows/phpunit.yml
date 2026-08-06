@@ -8,20 +8,6 @@ on:
         required: false
         default: ^6.14
         type: string
-  pull_request:
-    paths:
-      - '**.php'
-      - composer.json
-      - phpunit.xml.dist
-      - .github/workflows/phpunit.yml
-  push:
-    branches:
-      - master
-    paths:
-      - '**.php'
-      - composer.json
-      - phpunit.xml.dist
-      - .github/workflows/phpunit.yml
 
 permissions:
   contents: read
