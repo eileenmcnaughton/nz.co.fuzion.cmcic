@@ -115,7 +115,28 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
       $merchantRef = (string) $contributionID;
     }
 
-    CRM_Utils_System::redirect($this->prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef));
+    $relayUrl = $this->prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef);
+
+    if (self::isDrupalAjaxRequest()) {
+      $commands = array(
+        array(
+          'command' => 'cmcicRedirect',
+          'url' => $relayUrl,
+        ),
+      );
+      CRM_Utils_JSON::output($commands);
+    }
+
+    CRM_Utils_System::redirect($relayUrl);
+  }
+
+  /**
+   * Check if current request is a Drupal AJAX request.
+   *
+   * @return bool
+   */
+  public static function isDrupalAjaxRequest(): bool {
+    return !empty($_REQUEST['ajax_form']) || (isset($_REQUEST['_wrapper_format']) && $_REQUEST['_wrapper_format'] === 'drupal_ajax');
   }
 
   /**
