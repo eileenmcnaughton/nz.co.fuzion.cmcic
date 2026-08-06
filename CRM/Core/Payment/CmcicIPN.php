@@ -147,12 +147,83 @@ class CRM_Core_Payment_CmcicIPN {
     //since we have done MAC validation we can assume it is all good & just use the api to complete
     // based on the contribution id
     $successfulResults = array('payetest', 'paiement');
-    $resultCode = $this->retrieve('code-retour', 'String');
-    $contributionID = $this->retrieve('reference', 'Integer');
-    $trxn_id = $contributionID . '-' . $this->retrieve('numauto', 'String', FALSE);
+    $resultCode = (string) $this->retrieve('code-retour', 'String');
+    $contributionID = (int) $this->retrieve('reference', 'Integer');
+    $numauto = (string) $this->retrieve('numauto', 'String', FALSE);
+    $trxn_id = $contributionID . '-' . $numauto;
 
-    if(in_array($resultCode, $successfulResults)) {
-      if($resultCode == 'payetest') {
+    // Fetch existing contribution status, trxn_id and financial details to guarantee idempotency, status safety and amount validation
+    $contribution = \Civi\Api4\Contribution::get(FALSE)
+      ->addSelect('contribution_status_id:name', 'total_amount', 'currency', 'trxn_id')
+      ->addWhere('id', '=', $contributionID)
+      ->execute()
+      ->first();
+
+    if (!$contribution) {
+      \Civi::log()->error("Monetico IPN received for non-existent contribution #{$contributionID}");
+      $this->cmcic_receipt_exit(FALSE);
+      return FALSE;
+    }
+
+    $currentStatus = $contribution['contribution_status_id:name'] ?? '';
+    $existingTrxnId = (string) ($contribution['trxn_id'] ?? '');
+
+    // Idempotency: If the contribution is already Completed, verify that it is the exact same transaction replayed
+    if ($currentStatus === 'Completed') {
+      $isSameTransaction = ($resultCode === 'payetest')
+        || ($existingTrxnId !== '' && $existingTrxnId === $trxn_id);
+
+      if ($isSameTransaction) {
+        \Civi::log()->debug("Monetico IPN received for already completed contribution #{$contributionID} (same transaction). Returning idempotent receipt.");
+        $this->cmcic_receipt_exit(TRUE);
+        return TRUE;
+      }
+
+      \Civi::log()->error("Monetico IPN received second distinct transaction for already completed contribution #{$contributionID}. Rejecting.");
+      $this->cmcic_receipt_exit(FALSE);
+      return FALSE;
+    }
+
+    // Strict Validation of IPN amount & currency format against the CiviCRM contribution
+    $montantBrut = (string) $this->retrieve('montant', 'String');
+    if (!preg_match('/^([0-9]+(?:\.[0-9]{1,2})?)([A-Z]{3})$/', $montantBrut, $matches)) {
+      \Civi::log()->error("Monetico IPN malformed montant format for contribution #{$contributionID}: '{$montantBrut}'");
+      $this->cmcic_receipt_exit(FALSE);
+      return FALSE;
+    }
+
+    $rawAmountString = $matches[1];
+    $receivedCurrency = strtoupper($matches[2]);
+
+    // Reject fractional amounts for zero-decimal currencies (e.g. 10.25JPY is invalid)
+    if ($this->isZeroDecimalCurrency($receivedCurrency) && str_contains($rawAmountString, '.')) {
+      \Civi::log()->error("Monetico IPN invalid decimal fraction for zero-decimal currency {$receivedCurrency} on contribution #{$contributionID}: '{$montantBrut}'");
+      $this->cmcic_receipt_exit(FALSE);
+      return FALSE;
+    }
+
+    $receivedAmountRaw = (float) $rawAmountString;
+    $expectedAmountRaw = (float) ($contribution['total_amount'] ?? 0);
+    $expectedCurrency = strtoupper((string) ($contribution['currency'] ?? ''));
+
+    $receivedUnits = $this->amountToMinorUnits($receivedAmountRaw, $receivedCurrency);
+    $expectedUnits = $this->amountToMinorUnits($expectedAmountRaw, $expectedCurrency);
+
+    if ($receivedUnits !== $expectedUnits || $receivedCurrency !== $expectedCurrency) {
+      \Civi::log()->error(sprintf(
+        'Monetico IPN amount/currency mismatch for contribution #%d: received %d units (%s), expected %d units (%s).',
+        $contributionID,
+        $receivedUnits,
+        $receivedCurrency,
+        $expectedUnits,
+        $expectedCurrency
+      ));
+      $this->cmcic_receipt_exit(FALSE);
+      return FALSE;
+    }
+
+    if (in_array($resultCode, $successfulResults, TRUE)) {
+      if ($resultCode === 'payetest') {
         $trxn_id = 'test' . $contributionID . uniqid();
       }
       civicrm_api3('contribution', 'completetransaction', array(
@@ -162,8 +233,8 @@ class CRM_Core_Payment_CmcicIPN {
       ));
       $this->cmcic_receipt_exit(TRUE);
     }
-    elseif($resultCode == 'Annulation') {
-      $this->processFailedTransaction($contributionID);
+    elseif ($resultCode === 'Annulation') {
+      $this->processFailedTransaction($contributionID, $currentStatus);
       $this->cmcic_receipt_exit(TRUE);
     }
     return TRUE;
@@ -173,12 +244,35 @@ class CRM_Core_Payment_CmcicIPN {
    * Process failed transaction.
    *
    * @param int $contributionID
+   * @param string $currentStatus
    */
-  function processFailedTransaction($contributionID) {
-   \Civi\Api4\Contribution::update(FALSE)->setValues([
-     'cancel_date' => 'now',
-     'contribution_status_id:name' => 'Failed',
-   ])->addWhere('id', '=', $contributionID)->execute();
-   Civi::log()->debug("Setting contribution status to Failed");
+  function processFailedTransaction($contributionID, $currentStatus = '') {
+    if ($currentStatus === 'Completed') {
+      \Civi::log()->warning("Monetico IPN received cancellation for already completed contribution #{$contributionID}. Ignoring.");
+      return;
+    }
+    \Civi\Api4\Contribution::update(FALSE)->setValues([
+      'cancel_date' => 'now',
+      'contribution_status_id:name' => 'Failed',
+    ])->addWhere('id', '=', $contributionID)->execute();
+    \Civi::log()->debug("Setting contribution status to Failed for contribution #" . $contributionID);
+  }
+
+  /**
+   * Check if ISO currency code is a zero-decimal currency (JPY, KRW, VND, etc.).
+   */
+  protected function isZeroDecimalCurrency(string $currency): bool {
+    $zeroDecimalCurrencies = array('JPY', 'KRW', 'CLP', 'PYG', 'UGX', 'VND', 'BIF', 'DJF', 'GNF', 'KMF', 'MGA', 'RWF', 'VUV', 'XAF', 'XOF', 'XPF');
+    return in_array(strtoupper($currency), $zeroDecimalCurrencies, TRUE);
+  }
+
+  /**
+   * Convert float amount into integer minor units, accounting for zero-decimal currencies.
+   */
+  protected function amountToMinorUnits(float $amount, string $currency): int {
+    if ($this->isZeroDecimalCurrency($currency)) {
+      return (int) round($amount);
+    }
+    return (int) round($amount * 100);
   }
 }

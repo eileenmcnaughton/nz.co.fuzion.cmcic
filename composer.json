@@ -1,0 +1,30 @@
+{
+  "name": "jonathandhn/nz.co.fuzion.cmcic",
+  "description": "Monetico (CIC / Crédit Mutuel) payment processor for CiviCRM.",
+  "type": "civicrm-ext",
+  "license": "AGPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Jonathan Dahan",
+      "email": "jonathan@dhn.one"
+    }
+  ],
+  "require": {
+    "php": ">=8.1.0"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.13.6",
+    "friendsofphp/php-cs-fixer": "^3.60",
+    "phpunit/phpunit": "^10.5 || ^11.5"
+  },
+  "scripts": {
+    "cs-check": "phpcs --standard=.phpcs.xml CRM/ cmcic.php",
+    "cs-fix": "phpcbf --standard=.phpcs.xml CRM/ cmcic.php",
+    "phpunit": "CMCIC_UNIT_ONLY=1 phpunit -c phpunit.xml.dist --no-coverage --display-phpunit-deprecations",
+    "phpunit:integration": "phpunit -c phpunit.xml.dist --no-coverage --display-phpunit-deprecations",
+    "test": "@phpunit"
+  },
+  "extra": {
+    "installer-name": "nz.co.fuzion.cmcic"
+  }
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         failOnRisky="true"
+         failOnWarning="true"
+         cacheResult="false"
+         bootstrap="tests/phpunit/bootstrap.php"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd">
+  <source>
+    <include>
+      <directory suffix=".php">./CRM</directory>
+      <directory suffix=".php">./Civi</directory>
+    </include>
+  </source>
+  <testsuites>
+    <testsuite name="Monetico unit tests">
+      <directory>./tests/phpunit</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

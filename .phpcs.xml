@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<ruleset name="CmcicMonetico">
+    <description>PSR-12 PHP Coding Standard for Cmcic Monetico CiviCRM extension.</description>
+
+    <file>CRM</file>
+    <file>Civi</file>
+    <file>cmcic.php</file>
+
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <arg value="sp"/>
+
+    <config name="php_version" value="80100"/>
+
+    <rule ref="PSR12">
+        <!-- Allow CiviCRM legacy PSR-0 class naming convention (e.g. CRM_Core_Payment_Cmcic) -->
+        <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+        <exclude name="Squiz.Classes.ValidClassName.NotCamelCaps"/>
+        <!-- Allow CiviCRM convention of $_property naming for protected/private members -->
+        <exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/>
+        <!-- Allow CiviCRM hook/callback snake_case method names -->
+        <exclude name="PSR1.Methods.CamelCapsMethodName.NotCamelCaps"/>
+    </rule>
+</ruleset>
