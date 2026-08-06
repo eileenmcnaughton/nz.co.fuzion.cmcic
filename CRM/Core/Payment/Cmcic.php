@@ -90,7 +90,7 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
    *
    */
   function doPayment(&$params, $component = 'contribute') {
-    $component = strtolower($component);
+    $this->_component = strtolower($component);
     $contributionID = !empty($params['contributionID']) ? $params['contributionID'] : (!empty($params['contribution_id']) ? $params['contribution_id'] : NULL);
     if (!$contributionID) {
       Civi::log()->error('Cannot start Monetico checkout without a contribution ID.', array(
@@ -99,40 +99,22 @@ class CRM_Core_Payment_Cmcic extends CRM_Core_Payment{
       throw new CRM_Core_Exception(ts('Unable to prepare the payment reference.'));
     }
 
-    if ($component == 'event') {
-      $baseURL = 'civicrm/event/register';
-      $cancelURL = CRM_Utils_System::url($baseURL, array(
-        'reset' => 1,
-        'cc' => 'fail',
-        'participantId' => $orderID[4],
-      ),
-      TRUE, NULL, FALSE
-      );
+    $qfKey = $params['qfKey'] ?? NULL;
+    $participantId = $params['participantID'] ?? $params['participant_id'] ?? NULL;
+
+    $returnOKURL = !empty($params['returnURL']) ? $params['returnURL'] : $this->getReturnSuccessUrl($qfKey);
+    $cancelURL = !empty($params['cancelURL']) ? $params['cancelURL'] : $this->getCancelUrl($qfKey, $participantId);
+
+    if ($this->_component === 'event') {
+      $merchantRef = ($params['contactID'] ?? '') . '-' . ($params['eventID'] ?? '');
     }
-    elseif ($component == 'contribute') {
-      $baseURL = 'civicrm/contribute/transact';
-      $cancelURL = CRM_Utils_System::url($baseURL, array(
-        '_qf_Main_display' => 1,
-        'qfKey' => $params['qfKey'],
-        'cancel' => 1,
-        ),
-        TRUE, NULL, FALSE
-      );
+    elseif ($this->_component === 'contribute') {
+      $merchantRef = ($params['contactID'] ?? '') . '-' . $contributionID;
+    }
+    else {
+      $merchantRef = (string) $contributionID;
     }
 
-    $returnOKURL = CRM_Utils_System::url($baseURL,array(
-      '_qf_ThankYou_display' => 1,
-       'qfKey' => $params['qfKey']
-      ),
-      TRUE, NULL, FALSE
-    );
-
-    if ($component == 'event') {
-      $merchantRef = $params['contactID'] . "-" . $params['eventID'];//, 27, 20), 0, 24);
-    }
-    elseif ($component == 'contribute') {
-      $merchantRef = $params['contactID'] . "-" . $contributionID;// . " " . substr($params['description'], 20, 20), 0, 24);
-    }
     CRM_Utils_System::redirect($this->prepareHostedCheckout($params, $returnOKURL, $cancelURL, $merchantRef));
   }
 
