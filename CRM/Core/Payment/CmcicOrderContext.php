@@ -87,7 +87,6 @@ class CRM_Core_Payment_CmcicOrderContext {
       'city' => array('billingCity', 'city', 'city-1'),
       'postalCode' => array('billingPostalCode', 'postal_code', 'postal_code-1'),
       'email' => array('email', 'email-Primary', 'email-5'),
-      'phone' => array('phone'),
     );
     foreach ($map as $target => $sources) {
       foreach ($sources as $source) {
