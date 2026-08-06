@@ -88,9 +88,21 @@ class CRM_Core_Payment_CmcicPaymentStatus {
       throw new CRM_Core_Exception('Monetico payment status response does not contain a state.');
     }
 
+    $recreditsTotal = 0.0;
+    if (isset($xml->recredits->total)) {
+      $recreditsTotal = (float) preg_replace('/[^0-9\.]/', '', (string) $xml->recredits->total);
+    }
+    $capturedAmount = 0.0;
+    if (isset($xml->montantrecouvre)) {
+      $capturedAmount = (float) preg_replace('/[^0-9\.]/', '', (string) $xml->montantrecouvre);
+    }
+
     return array(
       'state' => (string) $xml->etat,
       'authorization_number' => (string) ($xml->numauto ?? ''),
+      'recredits_total' => $recreditsTotal,
+      'captured_amount' => $capturedAmount,
+      'raw_xml' => $xml,
     );
   }
 

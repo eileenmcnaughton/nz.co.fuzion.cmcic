@@ -1,27 +1,36 @@
 <?xml version="1.0"?>
 <extension key="nz.co.fuzion.cmcic" type="module">
   <file>cmcic</file>
-  <name>CMCIC Payment processor</name>
-  <description>Payment processor for CMCIC</description>
+  <name>Monetico Online Payment processor</name>
+  <description>Payment processor for Monetico Online (Crédit Mutuel / CIC)</description>
   <license>AGPL</license>
   <maintainer>
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2025-10-10</releaseDate>
-  <version>1.5</version>
-  <develStage>alpha</develStage>
+  <maintainer>
+    <author>Jonathan Dahan</author>
+    <email>jonathan@dhn.one</email>
+  </maintainer>
+  <releaseDate>2026-08-06</releaseDate>
+  <version>1.6</version>
+  <develStage>stable</develStage>
   <compatibility>
-    <ver>6.1</ver>
+    <ver>6.10</ver>
   </compatibility>
-  <comments>CMCIC Payment processor. You need to configure the return URL with your bank to
-  https://yoursite/civicrm/payment/ipn?processor_id=X
-  where X is your gateway processor ID.
-  If your contribution page is at
-  https://yoursite/index.php?option=com_civicrm&amp;task=civicrm/contribute/transact&amp;reset=1&amp;id=X
-  where X is your contribution page ID, then the return URL should be
-  https://yoursite/index.php?option=com_civicrm&amp;task=civicrm/payment/ipn&amp;processor_id=X
-  where X is your gateway processor ID.
+  <php_compatibility>
+    <ver>8.1</ver>
+    <ver>8.2</ver>
+    <ver>8.3</ver>
+    <ver>8.4</ver>
+    <ver>8.5</ver>
+  </php_compatibility>
+  <smarty_compatibility>
+    <ver>5</ver>
+  </smarty_compatibility>
+  <comments>Monetico Online Payment processor (Crédit Mutuel / CIC). You need to configure the CGI2 return URL with your bank to
+  https://yoursite/civicrm/payment/ipn/{processor_id}
+  where {processor_id} is your CiviCRM gateway payment processor ID.
   </comments>
   <civix>
     <namespace>CRM/Cmcic</namespace>
@@ -38,6 +47,7 @@
     <mixin>mgd-php@2.0.0</mixin>
     <mixin>smarty@1.0.3</mixin>
     <mixin>scan-classes@1.0.0</mixin>
+    <mixin>setting-php@1.0.0</mixin>
   </mixins>
   <classloader>
     <psr0 prefix="CRM_" path="."/>
