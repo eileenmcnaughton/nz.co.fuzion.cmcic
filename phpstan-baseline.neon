@@ -1,0 +1,679 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method CRM_Cmcic_Page_Cmcic\:\:run\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Cmcic/Page/Cmcic.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: CRM/Cmcic/Page/Cmcic.php
+
+		-
+			message: '#^Method CRM_Cmcic_Page_HostedFields\:\:applyResult\(\) has parameter \$attempt with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Cmcic/Page/HostedFields.php
+
+		-
+			message: '#^Method CRM_Cmcic_Page_HostedFields\:\:applyResult\(\) has parameter \$result with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Cmcic/Page/HostedFields.php
+
+		-
+			message: '#^Method CRM_Cmcic_Page_HostedFields\:\:continueOrSubmit\(\) has parameter \$attempt with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Cmcic/Page/HostedFields.php
+
+		-
+			message: '#^Method CRM_Cmcic_Page_HostedFields\:\:normaliseNextStep\(\) has parameter \$nextStep with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Cmcic/Page/HostedFields.php
+
+		-
+			message: '#^Method CRM_Cmcic_Page_HostedFields\:\:renderAttempt\(\) has parameter \$attempt with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Cmcic/Page/HostedFields.php
+
+		-
+			message: '#^Method CRM_Cmcic_Page_HostedFields\:\:run\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Cmcic/Page/HostedFields.php
+
+		-
+			message: '#^Call to an undefined method Civi\\Api4\\Action\\Contribution\\Update\:\:setValue\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Call to method getBody\(\) on an unknown class Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Cannot access offset mixed on object\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:__construct\(\) has parameter \$paymentProcessor with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:callMoneticoRecreditApi\(\) has parameter \$capture with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:callMoneticoRecreditApi\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:cancelHostedCheckoutContribution\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:checkConfig\(\) should return string but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:doDirectPayment\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:doDirectPayment\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:doDirectPayment\(\) should return array but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:doPayment\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:doRefund\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:doRefund\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:findRefundCapture\(\) has parameter \$captures with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:findRefundCapture\(\) has parameter \$refundAmount with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:findRefundCapture\(\) has parameter \$refundableBalance with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:findRefundCapture\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:formatSettlementDate\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:formatSettlementDate\(\) has parameter \$dateRemise with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:prepareCheckout\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:prepareHostedCheckout\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:prepareHostedFieldsCheckout\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:prepareHostedFieldsCheckout\(\) has parameter \$cancelURL with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:prepareHostedFieldsCheckout\(\) has parameter \$params with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:prepareHostedFieldsCheckout\(\) has parameter \$returnOKURL with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:setHostedCheckoutContributionStatus\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:setessCheckOut\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:setessCheckOut\(\) has parameter \$params with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:singleton\(\) has parameter \$force with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:singleton\(\) has parameter \$paymentForm with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:singleton\(\) has parameter \$paymentProcessor with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:startCheckoutForContribution\(\) has parameter \$urls with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_Cmcic\:\:startHostedCheckoutForContribution\(\) has parameter \$urls with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Parameter \#1 \$fields of static method CRM_Core_Payment_CmcicHmac\:\:calculate\(\) expects array, array\|Civi\\Payment\\PropertyBag given\.$#'
+			identifier: argument.type
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Parameter \#1 \$json of function json_decode expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Parameter \#1 \$string of function substr expects string, unknown given\.$#'
+			identifier: argument.type
+			count: 2
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Parameter \$key of method CRM_Core_Payment_Cmcic\:\:getUsableKey\(\) has invalid type unknown\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Property CRM_Core_Payment_Cmcic\:\:\$_algorithm has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Property CRM_Core_Payment_Cmcic\:\:\$_key has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Property CRM_Core_Payment_Cmcic\:\:\$_mode has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Return type \(void\) of method CRM_Core_Payment_Cmcic\:\:doPayment\(\) should be compatible with return type \(array\) of method CRM_Core_Payment\:\:doPayment\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: CRM/Core/Payment/Cmcic.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicHmac\:\:calculate\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicHmac.php
+
+		-
+			message: '#^Call to method getBody\(\) on an unknown class Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicHostedFieldsClient.php
+
+		-
+			message: '#^Call to method getStatusCode\(\) on an unknown class Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 4
+			path: CRM/Core/Payment/CmcicHostedFieldsClient.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:__construct\(\) has parameter \$inputData with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:cmcic_receipt_exit\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:isKnownResultCode\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:isKnownResultCode\(\) has parameter \$resultCode with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:main\(\) has invalid return type Ambigous\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:main\(\) has parameter \$paymentProcessor with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:processFailedTransaction\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:retrieve\(\) has invalid return type Ambigous\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:retrieve\(\) has invalid return type unknown\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:retrieve\(\) has invalid return type value\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:retrieve\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:setInputParameters\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicIPN\:\:setInputParameters\(\) has parameter \$inputParameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Non\-static access to static property CRM_Core_Payment_CmcicIPN\:\:\$_paymentProcessor\.$#'
+			identifier: staticProperty.nonStaticAccess
+			count: 5
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$algorithm$#'
+			identifier: parameter.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$fields$#'
+			identifier: parameter.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$key$#'
+			identifier: parameter.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$location$#'
+			identifier: parameter.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Parameter \#1 \$mac_ok of method CRM_Core_Payment_CmcicIPN\:\:cmcic_receipt\(\) expects bool, unknown given\.$#'
+			identifier: argument.type
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Parameter \#1 \$mac_ok of method CRM_Core_Payment_CmcicIPN\:\:cmcic_receipt_exit\(\) expects unknown, false given\.$#'
+			identifier: argument.type
+			count: 8
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Parameter \#1 \$mac_ok of method CRM_Core_Payment_CmcicIPN\:\:cmcic_receipt_exit\(\) expects unknown, true given\.$#'
+			identifier: argument.type
+			count: 4
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Parameter \$mac_ok of method CRM_Core_Payment_CmcicIPN\:\:cmcic_receipt_exit\(\) has invalid type unknown\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Property CRM_Core_Payment_CmcicIPN\:\:\$_exitMode has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Property CRM_Core_Payment_CmcicIPN\:\:\$_inputParameters type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Property CRM_Core_Payment_CmcicIPN\:\:\$_invoiceData type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Property CRM_Core_Payment_CmcicIPN\:\:\$_paymentProcessor has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: CRM/Core/Payment/CmcicIPN.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:build\(\) has parameter \$billing with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:build\(\) has parameter \$shoppingCart with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:buildFromPaymentParams\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:buildShoppingCart\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:buildShoppingCartItem\(\) has parameter \$lineItem with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:buildShoppingCartItem\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:getLineItemName\(\) has parameter \$lineItem with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Parameter \#1 \$string of function base64_encode expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: CRM/Core/Payment/CmcicOrderContext.php
+
+		-
+			message: '#^Call to method getBody\(\) on an unknown class Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 1
+			path: CRM/Core/Payment/CmcicPaymentStatus.php
+
+		-
+			message: '#^Call to method getStatusCode\(\) on an unknown class Psr\\Http\\Message\\ResponseInterface\.$#'
+			identifier: class.notFound
+			count: 2
+			path: CRM/Core/Payment/CmcicPaymentStatus.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicPaymentStatus\:\:parseMoneticoAmount\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: CRM/Core/Payment/CmcicPaymentStatus.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicPaymentStatus\:\:parseMoneticoAmount\(\) has parameter \$amount with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: CRM/Core/Payment/CmcicPaymentStatus.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicPaymentStatus\:\:query\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicPaymentStatus.php
+
+		-
+			message: '#^Method CRM_Core_Payment_CmcicPaymentStatus\:\:query\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: CRM/Core/Payment/CmcicPaymentStatus.php
+
+		-
+			message: '#^Method Civi\\Api4\\Action\\CmcicPayment\\Reconcile\:\:buildRefundPaymentValues\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Civi/Api4/Action/CmcicPayment/Reconcile.php
+
+		-
+			message: '#^Method Civi\\Cmcic\\CheckoutOption\\CmcicHostedCheckout\:\:__construct\(\) has parameter \$liveConnection with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Civi/Cmcic/CheckoutOption/CmcicHostedCheckout.php
+
+		-
+			message: '#^Method Civi\\Cmcic\\CheckoutOption\\CmcicHostedCheckout\:\:__construct\(\) has parameter \$testConnection with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: Civi/Cmcic/CheckoutOption/CmcicHostedCheckout.php
+
+		-
+			message: '#^Method Civi\\Cmcic\\CheckoutOption\\CmcicHostedCheckout\:\:getConnectionDetails\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Civi/Cmcic/CheckoutOption/CmcicHostedCheckout.php
+
+		-
+			message: '#^Method Civi\\Cmcic\\CheckoutOption\\CmcicHostedCheckout\:\:getDisplayConnection\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: Civi/Cmcic/CheckoutOption/CmcicHostedCheckout.php
+
+		-
+			message: '#^Parameter \$event of method Civi\\Cmcic\\CheckoutOption\\CmcicHostedCheckout\:\:validate\(\) has invalid type Civi\\Checkout\\Civi\\Afform\\Event\\AfformValidateEvent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Civi/Cmcic/CheckoutOption/CmcicHostedCheckout.php
+
+		-
+			message: '#^Property Civi\\Cmcic\\CheckoutOption\\CmcicHostedCheckout\:\:\$liveConnection has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: Civi/Cmcic/CheckoutOption/CmcicHostedCheckout.php
+
+		-
+			message: '#^Property Civi\\Cmcic\\CheckoutOption\\CmcicHostedCheckout\:\:\$testConnection has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: Civi/Cmcic/CheckoutOption/CmcicHostedCheckout.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$options\.$#'
+			identifier: property.notFound
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Call to function method_exists\(\) with CRM_Extension_Manager and ''isEnabled'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_civicrm_buildForm\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_civicrm_check\(\) has parameter \$messages with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_civicrm_check\(\) has parameter \$statusNames with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_civicrm_config\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_civicrm_config\(\) has parameter \$config with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_civicrm_enable\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_civicrm_install\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Function cmcic_register_afform_checkout_options\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: cmcic.php
+
+		-
+			message: '#^Result of function _cmcic_civix_civicrm_enable \(void\) is used\.$#'
+			identifier: function.void
+			count: 1
+			path: cmcic.php

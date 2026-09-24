@@ -13,17 +13,29 @@
     "php": ">=8.2.0"
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "^3.13.6",
     "friendsofphp/php-cs-fixer": "^3.60",
+    "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^10.5 || ^11.5",
-    "rector/rector": "^2"
+    "rector/rector": "^2",
+    "squizlabs/php_codesniffer": "^3.13.6"
   },
   "scripts": {
+    "analyse": "php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.neon.dist",
     "cs-check": "phpcs --standard=.phpcs.xml CRM/ Civi/ cmcic.php",
     "cs-fix": "phpcbf --standard=.phpcs.xml CRM/ Civi/ cmcic.php",
     "phpunit": "CMCIC_UNIT_ONLY=1 phpunit -c phpunit.xml.dist --no-coverage --display-phpunit-deprecations",
     "phpunit:integration": "phpunit -c phpunit.xml.dist --no-coverage --display-phpunit-deprecations",
-    "test": "@phpunit"
+    "quality": [
+      "@cs-check",
+      "@rector-check",
+      "@analyse"
+    ],
+    "rector": "rector process",
+    "rector-check": "rector process --dry-run",
+    "test": [
+      "@quality",
+      "@phpunit"
+    ]
   },
   "extra": {
     "installer-name": "nz.co.fuzion.cmcic"

@@ -1,0 +1,11 @@
+<?php
+
+namespace Drupal\webform\Ajax {
+    /** Optional Drupal Webform integration. */
+    class WebformRefreshCommand {
+        public function __construct(string $url) {}
+
+        /** @return array<string, mixed> */
+        public function render(): array { return []; }
+    }
+}

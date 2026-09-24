@@ -1,0 +1,36 @@
+includes:
+  - phpstan-baseline.neon
+
+parameters:
+  level: 8
+  phpVersion: 80200
+  parallel:
+    maximumNumberOfProcesses: 1
+  paths:
+    - cmcic.php
+    - CRM
+    - Civi
+  excludePaths:
+    analyse:
+      - cmcic.civix.php
+      - vendor
+  scanDirectories:
+    - ../standalone/vendor/guzzlehttp/guzzle/src
+    - ../standalone/vendor/civicrm/civicrm-core/CRM
+    - ../standalone/vendor/civicrm/civicrm-core/Civi
+    - ../standalone/vendor/civicrm/civicrm-core/ext/civi_contribute/Civi
+    - ../standalone/vendor/civicrm/civicrm-core/ext/afform/core/Civi
+  scanFiles:
+    - cmcic.civix.php
+    - ../standalone/vendor/civicrm/civicrm-core/Civi.php
+    - ../standalone/vendor/civicrm/civicrm-core/functions.php
+    - ../standalone/vendor/civicrm/civicrm-core/api/api.php
+    - ../standalone/vendor/pear/pear_exception/PEAR/Exception.php
+    - ../standalone/vendor/psr/log/src/LoggerInterface.php
+    - ../standalone/vendor/symfony/event-dispatcher/EventSubscriberInterface.php
+    - ../standalone/vendor/symfony/event-dispatcher-contracts/Event.php
+    - phpstan/stubs/external.stub
+  universalObjectCratesClasses:
+    - Civi\Core\Event\GenericHookEvent
+  reportUnmatchedIgnoredErrors: true
+  reportIgnoresWithoutComments: true

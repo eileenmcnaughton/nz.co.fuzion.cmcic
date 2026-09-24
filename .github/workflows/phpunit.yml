@@ -1,4 +1,4 @@
-name: PHPUnit
+name: Quality and PHPUnit
 
 on:
   workflow_dispatch:
@@ -17,6 +17,51 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CIVICRM_VERSION: ${{ inputs.civicrm-version || '^6.16' }}
+
+    steps:
+      - name: Checkout extension
+        uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: bcmath, curl, fileinfo, gd, intl, mbstring, mysqli, xml, zip
+          coverage: none
+
+      - name: Install quality tools
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install CiviCRM symbols
+        run: |
+          EXT_DIR="$GITHUB_WORKSPACE"
+          EXT_PACKAGE=$(composer show --self --name-only)
+
+          cd ..
+          git clone --depth=1 https://github.com/civicrm/civicrm-standalone.git standalone
+          cd standalone
+
+          composer config --no-plugins allow-plugins.composer/installers true
+          composer config --no-plugins allow-plugins.cweagans/composer-patches true
+          composer config --json 'extra.installer-paths.ext/{$name}' '["type:civicrm-ext"]'
+          composer config repositories.cmcic path "$EXT_DIR"
+          composer remove --no-update civicrm/civicrm-core civicrm/civicrm-packages
+          composer require --no-update \
+            "civicrm/civicrm-core:$CIVICRM_VERSION" \
+            "civicrm/civicrm-packages:$CIVICRM_VERSION"
+          composer require --with-all-dependencies --no-interaction --no-progress \
+            composer/installers \
+            civicrm/cli-tools \
+            "$EXT_PACKAGE"
+
+      - name: Run quality checks
+        run: composer quality
+
   phpunit:
     runs-on: ubuntu-latest
     timeout-minutes: 30

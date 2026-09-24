@@ -4,6 +4,19 @@ Extension to process payments using the **Monetico Online** payment solution pro
 
 Distributed under the terms of the GNU Affero General public license (AGPL 3). See LICENSE.txt for details.
 
+## Development
+
+Install the development dependencies and run the complete local check suite:
+
+```bash
+composer install
+composer test
+```
+
+`composer quality` runs PHPCS, a Rector dry run and PHPStan level 8. The
+PHPStan baseline records the extension's existing legacy typing debt; new
+unbaselined errors fail the command and the CI quality job.
+
 ## Requirements
 
 * **CiviCRM**: `6.16+` (Tested up to CiviCRM `6.18.0`)
