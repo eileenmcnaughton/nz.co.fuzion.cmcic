@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -35,4 +35,5 @@ final class CmcicRefundGuardTest extends TestCase {
     self::assertSame('10/08/2026', $method->invoke($processor, '2026-08-10'));
     self::assertSame('10/08/2026', $method->invoke($processor, '10/08/2026'));
   }
+
 }

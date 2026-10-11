@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use Civi\Api4\Action\CmcicPayment\Reconcile;
 use PHPUnit\Framework\TestCase;
@@ -51,4 +51,5 @@ final class CmcicReconcileUnitTest extends TestCase {
     self::assertSame(9941, $values['cancelled_payment_id']);
     self::assertSame('REFUND-85816', $values['trxn_id']);
   }
+
 }

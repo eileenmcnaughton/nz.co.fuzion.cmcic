@@ -3,20 +3,18 @@
 /**
  * Client for Monetico's signed Payment Status service.
  */
-class CRM_Core_Payment_CmcicPaymentStatus
-{
-    public const TEST_ENDPOINT = 'https://payment-api.e-i.com/test/etatpaiement.cgi';
-    public const LIVE_ENDPOINT = 'https://payment-api.e-i.com/etatpaiement.cgi';
+class CRM_Core_Payment_CmcicPaymentStatus {
+  public const TEST_ENDPOINT = 'https://payment-api.e-i.com/test/etatpaiement.cgi';
+  public const LIVE_ENDPOINT = 'https://payment-api.e-i.com/etatpaiement.cgi';
 
   /**
    * @param bool $testMode
    *
    * @return string
    */
-    public static function getEndpoint($testMode)
-    {
-        return $testMode ? self::TEST_ENDPOINT : self::LIVE_ENDPOINT;
-    }
+  public static function getEndpoint($testMode) {
+    return $testMode ? self::TEST_ENDPOINT : self::LIVE_ENDPOINT;
+  }
 
   /**
    * Map Monetico's payment state to the CiviCRM Checkout state.
@@ -25,19 +23,18 @@ class CRM_Core_Payment_CmcicPaymentStatus
    *
    * @return string
    */
-    public static function getCheckoutStatus($state)
-    {
-        if ($state === 'PA') {
-            return 'success';
-        }
-        if ($state === 'AN') {
-            return 'cancel';
-        }
-        if (in_array($state, ['RE', 'GR', 'AP'], true)) {
-            return 'fail';
-        }
-        return 'pending';
+  public static function getCheckoutStatus($state) {
+    if ($state === 'PA') {
+      return 'success';
     }
+    if ($state === 'AN') {
+      return 'cancel';
+    }
+    if (in_array($state, ['RE', 'GR', 'AP'], TRUE)) {
+      return 'fail';
+    }
+    return 'pending';
+  }
 
   /**
    * Retrieve a payment status from Monetico.
@@ -50,99 +47,99 @@ class CRM_Core_Payment_CmcicPaymentStatus
    *
    * @return array
    */
-    public static function query($fields, $key, $algorithm, $endpoint, $httpClient = null)
-    {
-        $required = ['version', 'TPE', 'date', 'montant', 'reference', 'societe'];
-        foreach ($required as $field) {
-            if (empty($fields[$field])) {
-                throw new CRM_Core_Exception('Missing required Monetico payment status field: ' . $field);
-            }
+  public static function query($fields, $key, $algorithm, $endpoint, $httpClient = NULL) {
+    $required = ['version', 'TPE', 'date', 'montant', 'reference', 'societe'];
+    foreach ($required as $field) {
+      if (empty($fields[$field])) {
+        throw new CRM_Core_Exception('Missing required Monetico payment status field: ' . $field);
+      }
+    }
+
+    $fields['MAC'] = CRM_Core_Payment_CmcicHmac::calculate($fields, $key, $algorithm);
+    if ($httpClient) {
+      $body = $httpClient($endpoint, $fields);
+    }
+    else {
+      $client = new \GuzzleHttp\Client([
+        'connect_timeout' => 2,
+        'timeout' => 5,
+        'verify' => TRUE,
+      ]);
+      $response = $client->post($endpoint, [
+        'form_params' => $fields,
+        'headers' => ['Accept' => 'application/xml'],
+        'http_errors' => FALSE,
+      ]);
+      if ($response->getStatusCode() !== 200) {
+        throw new CRM_Core_Exception(
+        'Monetico payment status request failed with HTTP ' . $response->getStatusCode() . '.'
+        );
+      }
+      $body = (string) $response->getBody();
+    }
+
+    $xml = @simplexml_load_string($body, 'SimpleXMLElement', LIBXML_NONET);
+    if (!$xml) {
+      throw new CRM_Core_Exception('Monetico payment status response is not valid XML.');
+    }
+    if (isset($xml->cdr) && (string) $xml->cdr !== '') {
+      throw new CRM_Core_Exception('Monetico payment status error: ' . (string) $xml->cdr . '.');
+    }
+    if (empty($xml->etat)) {
+      throw new CRM_Core_Exception('Monetico payment status response does not contain a state.');
+    }
+
+    $recreditsTotal = 0.0;
+    if (isset($xml->recredits->total)) {
+      $recreditsTotal = (float) preg_replace('/[^0-9\.]/', '', (string) $xml->recredits->total);
+    }
+    $capturedAmount = 0.0;
+    if (isset($xml->montantrecouvre)) {
+      $capturedAmount = (float) preg_replace('/[^0-9\.]/', '', (string) $xml->montantrecouvre);
+    }
+
+    $captures = [];
+    if (isset($xml->recouvrements->recouvrement)) {
+      foreach ($xml->recouvrements->recouvrement as $capture) {
+        if ((string) ($capture->resultat ?? '') !== '1') {
+          continue;
         }
 
-        $fields['MAC'] = CRM_Core_Payment_CmcicHmac::calculate($fields, $key, $algorithm);
-        if ($httpClient) {
-            $body = $httpClient($endpoint, $fields);
-        } else {
-            $client = new \GuzzleHttp\Client([
-            'connect_timeout' => 2,
-            'timeout' => 5,
-            'verify' => true,
-            ]);
-            $response = $client->post($endpoint, [
-            'form_params' => $fields,
-            'headers' => ['Accept' => 'application/xml'],
-            'http_errors' => false,
-            ]);
-            if ($response->getStatusCode() !== 200) {
-                throw new CRM_Core_Exception(
-                    'Monetico payment status request failed with HTTP ' . $response->getStatusCode() . '.'
-                );
-            }
-            $body = (string) $response->getBody();
+        $captureRecreditsTotal = 0.0;
+        if (isset($capture->recredits->recredit)) {
+          foreach ($capture->recredits->recredit as $recredit) {
+            $captureRecreditsTotal += self::parseMoneticoAmount(
+            (string) ($recredit->montant_recredite ?? '')
+            );
+          }
         }
 
-        $xml = @simplexml_load_string($body, 'SimpleXMLElement', LIBXML_NONET);
-        if (!$xml) {
-            throw new CRM_Core_Exception('Monetico payment status response is not valid XML.');
-        }
-        if (isset($xml->cdr) && (string) $xml->cdr !== '') {
-            throw new CRM_Core_Exception('Monetico payment status error: ' . (string) $xml->cdr . '.');
-        }
-        if (empty($xml->etat)) {
-            throw new CRM_Core_Exception('Monetico payment status response does not contain a state.');
-        }
+        $captures[] = [
+          'amount' => self::parseMoneticoAmount((string) ($capture->montant ?? '')),
+          'date_remise' => trim((string) ($capture->date_remise ?? '')),
+          'authorization_number' => trim((string) ($capture->numero_autorisation ?? '')),
+          'recredits_total' => $captureRecreditsTotal,
+        ];
+      }
+    }
 
-        $recreditsTotal = 0.0;
-        if (isset($xml->recredits->total)) {
-            $recreditsTotal = (float) preg_replace('/[^0-9\.]/', '', (string) $xml->recredits->total);
-        }
-        $capturedAmount = 0.0;
-        if (isset($xml->montantrecouvre)) {
-            $capturedAmount = (float) preg_replace('/[^0-9\.]/', '', (string) $xml->montantrecouvre);
-        }
-
-        $captures = [];
-        if (isset($xml->recouvrements->recouvrement)) {
-            foreach ($xml->recouvrements->recouvrement as $capture) {
-                if ((string) ($capture->resultat ?? '') !== '1') {
-                    continue;
-                }
-
-                $captureRecreditsTotal = 0.0;
-                if (isset($capture->recredits->recredit)) {
-                    foreach ($capture->recredits->recredit as $recredit) {
-                        $captureRecreditsTotal += self::parseMoneticoAmount(
-                            (string) ($recredit->montant_recredite ?? '')
-                        );
-                    }
-                }
-
-                $captures[] = [
-                'amount' => self::parseMoneticoAmount((string) ($capture->montant ?? '')),
-                'date_remise' => trim((string) ($capture->date_remise ?? '')),
-                'authorization_number' => trim((string) ($capture->numero_autorisation ?? '')),
-                'recredits_total' => $captureRecreditsTotal,
-                ];
-            }
-        }
-
-        return [
-        'state' => (string) $xml->etat,
-        'authorization_number' => (string) ($xml->numauto ?? ''),
-        'recredits_total' => $recreditsTotal,
-        'captured_amount' => $capturedAmount,
+    return [
+      'state' => (string) $xml->etat,
+      'authorization_number' => (string) ($xml->numauto ?? ''),
+      'recredits_total' => $recreditsTotal,
+      'captured_amount' => $capturedAmount,
       // Present for deferred, split, and recurring payments. Immediate card
       // payments may only support Monetico's documented global refund path.
-        'captures' => $captures,
-        'raw_xml' => $xml,
-        ];
-    }
+      'captures' => $captures,
+      'raw_xml' => $xml,
+    ];
+  }
 
   /**
    * Convert a Monetico amount such as "12.34EUR" to a decimal amount.
    */
-    protected static function parseMoneticoAmount($amount)
-    {
-        return (float) preg_replace('/[^0-9\.]/', '', (string) $amount);
-    }
+  protected static function parseMoneticoAmount($amount) {
+    return (float) preg_replace('/[^0-9\.]/', '', (string) $amount);
+  }
+
 }

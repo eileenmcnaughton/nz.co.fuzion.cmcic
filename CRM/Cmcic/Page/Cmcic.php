@@ -1,34 +1,32 @@
 <?php
 
-class CRM_Cmcic_Page_Cmcic extends CRM_Core_Page
-{
-    public function run()
-    {
-        $checkout = CRM_Core_Session::singleton()->get('checkout', 'cmcic');
-        if (empty($checkout['fields']) || empty($checkout['url'])) {
-            CRM_Core_Error::fatal(ts('Unable to start the Monetico checkout.'));
-        }
+class CRM_Cmcic_Page_Cmcic extends CRM_Core_Page {
 
-        CRM_Core_Session::singleton()->set('checkout', null, 'cmcic');
-        $fields = [];
-        foreach ($checkout['fields'] as $name => $value) {
-            $fields[htmlspecialchars($name, ENT_QUOTES, 'UTF-8')] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-        }
-        $this->assign('fields', $fields);
-        $this->assign('url', htmlspecialchars($checkout['url'], ENT_QUOTES, 'UTF-8'));
-        $smarty = CRM_Core_Smarty::singleton();
-        echo CRM_Utils_String::parseOneOffStringThroughSmarty($this->getText());
-        die;
-        parent::run();
+  public function run() {
+    $checkout = CRM_Core_Session::singleton()->get('checkout', 'cmcic');
+    if (empty($checkout['fields']) || empty($checkout['url'])) {
+      CRM_Core_Error::fatal(ts('Unable to start the Monetico checkout.'));
     }
+
+    CRM_Core_Session::singleton()->set('checkout', NULL, 'cmcic');
+    $fields = [];
+    foreach ($checkout['fields'] as $name => $value) {
+      $fields[htmlspecialchars($name, ENT_QUOTES, 'UTF-8')] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+    $this->assign('fields', $fields);
+    $this->assign('url', htmlspecialchars($checkout['url'], ENT_QUOTES, 'UTF-8'));
+    $smarty = CRM_Core_Smarty::singleton();
+    echo CRM_Utils_String::parseOneOffStringThroughSmarty($this->getText());
+    die;
+    parent::run();
+  }
 
   /**
    * we are trying this quick retrieval in the hope of a quicker form
    * @return string
    */
-    public function getText()
-    {
-        return "<p>" . ts('Please Click the pay now button if you are not automatically redirected') . '</p>
+  public function getText() {
+    return "<p>" . ts('Please Click the pay now button if you are not automatically redirected') . '</p>
 <form method="post" id="form" name="CMCICFormulaire"
 target="_top" action="{$url}">
 {foreach from=$fields key=k item=field}
@@ -39,5 +37,6 @@ target="_top" action="{$url}">
 <script type="text/javascript">
 document.getElementById("form").submit();
 </script>';
-    }
+  }
+
 }

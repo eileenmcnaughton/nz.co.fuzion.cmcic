@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -36,4 +36,5 @@ final class CmcicProcessorResolutionTest extends TestCase {
     $this->expectException(CRM_Core_Exception::class);
     $processor->getOperationalProcessor('test');
   }
+
 }

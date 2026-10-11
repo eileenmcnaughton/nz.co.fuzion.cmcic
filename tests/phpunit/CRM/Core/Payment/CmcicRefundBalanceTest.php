@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -29,4 +29,5 @@ final class CmcicRefundBalanceTest extends TestCase {
     $exceedsBalance = $requestedRefundAmount > $soldeRemboursable;
     self::assertTrue($exceedsBalance);
   }
+
 }

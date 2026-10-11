@@ -13,16 +13,18 @@
     "php": ">=8.2.0"
   },
   "require-dev": {
+    "drupal/coder": "dev-8.x-2.x-civi",
     "friendsofphp/php-cs-fixer": "^3.60",
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^10.5 || ^11.5",
     "rector/rector": "^2",
-    "squizlabs/php_codesniffer": "^3.13.6"
+    "squizlabs/php_codesniffer": "^3.13.6",
+    "symfony/yaml": "^7.2"
   },
   "scripts": {
     "analyse": "php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.neon.dist",
-    "cs-check": "phpcs --standard=.phpcs.xml CRM/ Civi/ cmcic.php",
-    "cs-fix": "phpcbf --standard=.phpcs.xml CRM/ Civi/ cmcic.php",
+    "cs-check": "php -d error_reporting=22527 vendor/bin/phpcs --standard=.phpcs.xml",
+    "cs-fix": "php -d error_reporting=22527 vendor/bin/phpcbf --standard=.phpcs.xml",
     "phpunit": "CMCIC_UNIT_ONLY=1 phpunit -c phpunit.xml.dist --no-coverage --display-phpunit-deprecations",
     "phpunit:integration": "phpunit -c phpunit.xml.dist --no-coverage --display-phpunit-deprecations",
     "quality": [
@@ -39,5 +41,11 @@
   },
   "extra": {
     "installer-name": "nz.co.fuzion.cmcic"
-  }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/civicrm/coder.git"
+    }
+  ]
 }

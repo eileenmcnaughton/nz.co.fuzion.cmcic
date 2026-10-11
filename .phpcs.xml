@@ -1,31 +1,21 @@
 <?xml version="1.0"?>
 <ruleset name="CmcicMonetico">
-    <description>PSR-12 PHP Coding Standard for Cmcic Monetico CiviCRM extension.</description>
+    <description>CiviCRM PHP coding standard for the Cmcic Monetico extension.</description>
 
     <file>CRM</file>
     <file>Civi</file>
+    <file>settings</file>
+    <file>tests</file>
+    <file>cmcic.civix.php</file>
     <file>cmcic.php</file>
+    <file>rector.php</file>
 
     <arg name="colors"/>
     <arg name="extensions" value="php"/>
     <arg value="sp"/>
 
     <config name="php_version" value="80200"/>
+    <config name="installed_paths" value="vendor/drupal/coder/coder_sniffer"/>
 
-    <rule ref="PSR12">
-        <!-- Allow CiviCRM legacy PSR-0 class naming convention (e.g. CRM_Core_Payment_Cmcic) -->
-        <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
-        <exclude name="Squiz.Classes.ValidClassName.NotCamelCaps"/>
-        <!-- Allow CiviCRM convention of $_property naming for protected/private members -->
-        <exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/>
-        <!-- Allow CiviCRM hook/callback snake_case method names -->
-        <exclude name="PSR1.Methods.CamelCapsMethodName.NotCamelCaps"/>
-        <!-- CiviCRM API4 actions require the protected _run() method name. -->
-        <exclude name="PSR2.Methods.MethodDeclaration.Underscore"/>
-    </rule>
-
-    <!-- CiviCRM extension entry points combine Civix bootstrap side effects and hook declarations. -->
-    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
-        <exclude-pattern>cmcic.php</exclude-pattern>
-    </rule>
+    <rule ref="Drupal"/>
 </ruleset>

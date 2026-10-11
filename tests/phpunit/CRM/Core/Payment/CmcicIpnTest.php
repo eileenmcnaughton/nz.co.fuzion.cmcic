@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -13,7 +13,6 @@ final class CmcicIpnTest extends TestCase {
       ->getMock();
 
     $ref = new ReflectionMethod(CRM_Core_Payment_CmcicIPN::class, 'isZeroDecimalCurrency');
-
 
     self::assertTrue($ref->invoke($ipn, 'JPY'));
     self::assertTrue($ref->invoke($ipn, 'KRW'));
@@ -29,8 +28,8 @@ final class CmcicIpnTest extends TestCase {
 
     $ref = new ReflectionMethod(CRM_Core_Payment_CmcicIPN::class, 'amountToMinorUnits');
 
-
     self::assertSame(1212, $ref->invoke($ipn, 12.12, 'EUR'));
     self::assertSame(1000, $ref->invoke($ipn, 1000.00, 'JPY'));
   }
+
 }

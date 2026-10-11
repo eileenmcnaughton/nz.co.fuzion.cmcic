@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace {
   ini_set('memory_limit', '2G');
@@ -20,7 +20,11 @@ namespace {
   if (!class_exists('CRM_Core_Payment')) {
     abstract class CRM_Core_Payment {
       protected $_paymentProcessor = [];
-      public function getPaymentProcessor() { return $this->_paymentProcessor; }
+
+      public function getPaymentProcessor() {
+        return $this->_paymentProcessor;
+      }
+
     }
   }
   if (!class_exists('CRM_Core_Exception')) {
@@ -28,11 +32,19 @@ namespace {
   }
   if (!class_exists('CRM_Utils_System')) {
     class CRM_Utils_System {
-      public static function version() { return '6.16.0'; }
+
+      public static function version() {
+        return '6.16.0';
+      }
+
     }
   }
   if (!function_exists('ts')) {
-    function ts(string $str, array $args = []): string { return $str; }
+
+    function ts(string $str, array $args = []): string {
+      return $str;
+    }
+
   }
 
   /**
@@ -74,17 +86,25 @@ namespace {
     }
     throw new RuntimeException('Unknown decoder format: ' . $decode);
   }
+
 }
 
 namespace Civi\Payment {
   if (!class_exists('Civi\Payment\System')) {
     class System {
       private static $instance = NULL;
+
       public static function singleton() {
-        if (!self::$instance) { self::$instance = new System(); }
+        if (!self::$instance) {
+          self::$instance = new System();
+        }
         return self::$instance;
       }
-      public function getByName($name, $isTest) { return NULL; }
+
+      public function getByName($name, $isTest) {
+        return NULL;
+      }
+
     }
   }
 }

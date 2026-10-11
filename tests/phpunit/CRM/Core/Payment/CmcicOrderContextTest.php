@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -84,4 +84,5 @@ final class CmcicOrderContextTest extends TestCase {
     $method = new ReflectionMethod(CRM_Core_Payment_CmcicOrderContext::class, 'buildShoppingCartItem');
     return $method->invoke(NULL, $lineItem);
   }
+
 }

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -131,4 +131,5 @@ XML;
     self::assertSame('123456', $result['captures'][0]['authorization_number']);
     self::assertSame(15.25, $result['captures'][0]['recredits_total']);
   }
+
 }

@@ -73,12 +73,6 @@ parameters:
 			path: CRM/Core/Payment/Cmcic.php
 
 		-
-			message: '#^Method CRM_Core_Payment_Cmcic\:\:__construct\(\) has parameter \$paymentProcessor with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: CRM/Core/Payment/Cmcic.php
-
-		-
 			message: '#^Method CRM_Core_Payment_Cmcic\:\:callMoneticoRecreditApi\(\) has parameter \$capture with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -141,18 +135,6 @@ parameters:
 		-
 			message: '#^Method CRM_Core_Payment_Cmcic\:\:findRefundCapture\(\) has parameter \$captures with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: CRM/Core/Payment/Cmcic.php
-
-		-
-			message: '#^Method CRM_Core_Payment_Cmcic\:\:findRefundCapture\(\) has parameter \$refundAmount with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: CRM/Core/Payment/Cmcic.php
-
-		-
-			message: '#^Method CRM_Core_Payment_Cmcic\:\:findRefundCapture\(\) has parameter \$refundableBalance with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: CRM/Core/Payment/Cmcic.php
 
@@ -224,24 +206,6 @@ parameters:
 
 		-
 			message: '#^Method CRM_Core_Payment_Cmcic\:\:setessCheckOut\(\) has parameter \$params with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: CRM/Core/Payment/Cmcic.php
-
-		-
-			message: '#^Method CRM_Core_Payment_Cmcic\:\:singleton\(\) has parameter \$force with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: CRM/Core/Payment/Cmcic.php
-
-		-
-			message: '#^Method CRM_Core_Payment_Cmcic\:\:singleton\(\) has parameter \$paymentForm with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: CRM/Core/Payment/Cmcic.php
-
-		-
-			message: '#^Method CRM_Core_Payment_Cmcic\:\:singleton\(\) has parameter \$paymentProcessor with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: CRM/Core/Payment/Cmcic.php
@@ -409,30 +373,6 @@ parameters:
 			path: CRM/Core/Payment/CmcicIPN.php
 
 		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$algorithm$#'
-			identifier: parameter.notFound
-			count: 1
-			path: CRM/Core/Payment/CmcicIPN.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$fields$#'
-			identifier: parameter.notFound
-			count: 1
-			path: CRM/Core/Payment/CmcicIPN.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$key$#'
-			identifier: parameter.notFound
-			count: 1
-			path: CRM/Core/Payment/CmcicIPN.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$location$#'
-			identifier: parameter.notFound
-			count: 1
-			path: CRM/Core/Payment/CmcicIPN.php
-
-		-
 			message: '#^Parameter \#1 \$mac_ok of method CRM_Core_Payment_CmcicIPN\:\:cmcic_receipt\(\) expects bool, unknown given\.$#'
 			identifier: argument.type
 			count: 1
@@ -483,12 +423,6 @@ parameters:
 		-
 			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:build\(\) has parameter \$billing with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: CRM/Core/Payment/CmcicOrderContext.php
-
-		-
-			message: '#^Method CRM_Core_Payment_CmcicOrderContext\:\:build\(\) has parameter \$shoppingCart with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: CRM/Core/Payment/CmcicOrderContext.php
 

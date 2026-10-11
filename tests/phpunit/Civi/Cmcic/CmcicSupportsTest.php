@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -23,4 +23,5 @@ final class CmcicSupportsTest extends TestCase {
     cmcic_civicrm_check($messages);
     self::assertIsArray($messages);
   }
+
 }

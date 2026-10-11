@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -42,4 +42,5 @@ final class CmcicHmacTest extends TestCase {
       CRM_Core_Payment_CmcicHmac::calculateBody($body, $key)
     );
   }
+
 }
