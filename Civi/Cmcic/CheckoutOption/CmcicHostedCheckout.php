@@ -55,9 +55,9 @@ if (
             return !empty($instrument['name']) ? (string) $instrument['name'] : null;
         }
 
-        public function getPaymentProcessorId(): ?int
+        public function getPaymentProcessorId(bool $testMode = false): ?int
         {
-            $connection = $this->getDisplayConnection();
+            $connection = $testMode ? $this->testConnection : $this->liveConnection;
             return !empty($connection['id']) ? (int) $connection['id'] : null;
         }
 

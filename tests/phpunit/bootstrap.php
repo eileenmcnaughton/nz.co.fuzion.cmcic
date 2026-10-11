@@ -89,6 +89,15 @@ namespace Civi\Payment {
   }
 }
 
+namespace Civi\Checkout {
+  if (!interface_exists('Civi\Checkout\CheckoutOptionInterface')) {
+    interface CheckoutOptionInterface {}
+  }
+  if (!interface_exists('Civi\Checkout\AfformCheckoutOptionInterface')) {
+    interface AfformCheckoutOptionInterface {}
+  }
+}
+
 namespace Civi\Api4\Generic {
   if (!class_exists('Civi\Api4\Generic\AbstractAction')) {
     abstract class AbstractAction {}

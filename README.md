@@ -19,7 +19,7 @@ unbaselined errors fail the command and the CI quality job.
 
 ## Requirements
 
-* **CiviCRM**: `6.16+` (Tested up to CiviCRM `6.18.0`)
+* **CiviCRM**: `6.16+` (Tested up to CiviCRM `6.19.0`)
 * **PHP**: `8.2+` (compatible with PHP 8.2, 8.3, 8.4, 8.5)
 
 ## Configuration
