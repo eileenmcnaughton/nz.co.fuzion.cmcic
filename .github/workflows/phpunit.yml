@@ -8,6 +8,32 @@ on:
         required: false
         default: ^6.16
         type: string
+  pull_request:
+    paths:
+      - '**.php'
+      - composer.json
+      - composer.lock
+      - phpstan.neon.dist
+      - phpstan-baseline.neon
+      - phpstan/**
+      - rector.php
+      - .phpcs.xml
+      - phpunit.xml.dist
+      - .github/workflows/phpunit.yml
+  push:
+    branches:
+      - master
+    paths:
+      - '**.php'
+      - composer.json
+      - composer.lock
+      - phpstan.neon.dist
+      - phpstan-baseline.neon
+      - phpstan/**
+      - rector.php
+      - .phpcs.xml
+      - phpunit.xml.dist
+      - .github/workflows/phpunit.yml
 
 permissions:
   contents: read

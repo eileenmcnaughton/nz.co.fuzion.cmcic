@@ -10,7 +10,7 @@
     <arg name="extensions" value="php"/>
     <arg value="sp"/>
 
-    <config name="php_version" value="80100"/>
+    <config name="php_version" value="80200"/>
 
     <rule ref="PSR12">
         <!-- Allow CiviCRM legacy PSR-0 class naming convention (e.g. CRM_Core_Payment_Cmcic) -->
